@@ -24,7 +24,7 @@ export interface CoachSettings {
 const defaults: CoachSettings = {
   coachVoiceId: 'cgSgspJ2msm6clMCkdW9', // Jessica
   coachVoiceName: 'Jessica',
-  voiceEnabled: true,
+  voiceEnabled: false,
   voiceSpeed: 1.0,
   sessionLength: 30,
   autoSuggestTopics: true,

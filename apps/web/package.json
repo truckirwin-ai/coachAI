@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "pkill -f 'vite.*3000' 2>/dev/null; sleep 0.3; vite --port 3000",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predev": "npx kill-port 3000 || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

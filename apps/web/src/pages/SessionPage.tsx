@@ -2,15 +2,17 @@ import { useEffect, useState, useCallback } from 'react';
 
 import { ChatWindow } from '../components/chat/ChatWindow';
 import { MessageInput } from '../components/chat/MessageInput';
-import { SessionHeader, COACHING_TOPICS } from '../components/chat/SessionHeader';
+import { SessionHeader } from '../components/chat/SessionHeader';
+import { COACHING_TOPICS } from '../data/coachingTopics';
 import { useSessionStore } from '../store/sessionStore';
 import { useSettingsStore } from '../store/settingsStore';
 
 import { useVoiceSession } from '../hooks/useVoiceSession';
+import { ConversationTabs } from '../components/chat/ConversationTabs';
 import { mockMessages } from '../data/mockData';
 
 export function SessionPage() {
-  const { messages, isThinking, isSpeaking, setSession, setPendingInput, addUserMessage, addCoachMessage, setSkill } = useSessionStore();
+  const { messages, isThinking, isSpeaking, setSession, setPendingInput, addUserMessage, addCoachMessage, setSkill, bargeIn } = useSessionStore();
 
   const { voiceEnabled } = useSettingsStore();
   const [currentTopic, setCurrentTopic] = useState('difficult-conversations');
@@ -35,16 +37,18 @@ export function SessionPage() {
   }, [setPendingInput]);
 
   const handleVoiceSend = useCallback((text: string) => {
-    if (!isThinking && !isSpeaking) {
+    if (!isThinking) {
       addUserMessage(text);
       setPendingInput('');
     }
-  }, [isThinking, isSpeaking, addUserMessage, setPendingInput]);
+  }, [isThinking, addUserMessage, setPendingInput]);
 
   const { isListening, transcript } = useVoiceSession({
     onTranscript: handleTranscript,
     onSend: handleVoiceSend,
-    enabled: voiceEnabled && !isThinking && !isSpeaking,
+    enabled: voiceEnabled,
+    isSpeaking,
+    onBargeIn: bargeIn,
   });
 
   return (
@@ -52,6 +56,7 @@ export function SessionPage() {
       {/* Main chat */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <SessionHeader currentTopic={currentTopic} onTopicChange={handleTopicChange} />
+        <ConversationTabs />
         <ChatWindow messages={messages} isThinking={isThinking} />
 
         {voiceEnabled && (
@@ -64,7 +69,14 @@ export function SessionPage() {
             transition: 'all .3s',
             flexShrink: 0,
           }}>
-            {isListening ? (
+            {isSpeaking ? (
+              <>
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className="voice-wave-bar" style={{ background: '#e67e22', animationDuration: `${0.6 + i * 0.1}s` }} />
+                ))}
+                <span style={{ color: '#e67e22' }}>Coach speaking — say anything to interrupt</span>
+              </>
+            ) : isListening ? (
               <>
                 {[1,2,3,4,5].map(i => (
                   <div key={i} className="voice-wave-bar" />
@@ -72,7 +84,7 @@ export function SessionPage() {
                 <span>Listening{transcript ? ` — "${transcript}"` : '...'}</span>
               </>
             ) : (
-              <span>🔇 Mic paused — AI speaking</span>
+              <span style={{ opacity: 0.5 }}>◉ Initializing mic...</span>
             )}
           </div>
         )}

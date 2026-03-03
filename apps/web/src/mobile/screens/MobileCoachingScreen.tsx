@@ -4,7 +4,7 @@ import { useSessionStore } from '../../store/sessionStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useVoiceSession } from '../../hooks/useVoiceSession';
 import { mockMessages } from '../../data/mockData';
-import { COACHING_TOPICS } from '../../components/chat/SessionHeader';
+import { COACHING_TOPICS } from '../../data/coachingTopics';
 
 export function MobileCoachingScreen() {
   const { messages, isThinking, isSpeaking, setSession, setPendingInput, addUserMessage, addCoachMessage, setSkill, pendingInput } = useSessionStore();

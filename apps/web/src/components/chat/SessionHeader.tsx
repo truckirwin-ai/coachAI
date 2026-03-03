@@ -3,6 +3,7 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { Mic, MicOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../../store/sessionStore';
+import { COACHING_TOPICS } from '../../data/coachingTopics';
 
 function fmt(s: number) {
   const m = Math.floor(s / 60).toString().padStart(2, '0');
@@ -10,28 +11,6 @@ function fmt(s: number) {
   return `${m}:${sec}`;
 }
 
-export const COACHING_TOPICS = [
-  { id: 'difficult-conversations', label: 'Difficult Conversations', domain: 'Leadership' },
-  { id: 'radical-candor', label: 'Radical Candor', domain: 'Communication' },
-  { id: 'managing-up', label: 'Managing Up', domain: 'Career' },
-  { id: 'delegation', label: 'Delegation & Trust', domain: 'Management' },
-  { id: 'executive-presence', label: 'Executive Presence', domain: 'Leadership' },
-  { id: 'strategic-thinking', label: 'Strategic Thinking', domain: 'Strategy' },
-  { id: 'giving-feedback', label: 'Giving Feedback', domain: 'Management' },
-  { id: 'presentations', label: 'Presentations & Communication', domain: 'Communication' },
-  { id: 'negotiation', label: 'Negotiation', domain: 'Influence' },
-  { id: 'psychological-safety', label: 'Psychological Safety', domain: 'Leadership' },
-  { id: 'decision-making', label: 'Decision Making', domain: 'Leadership' },
-  { id: 'burnout', label: 'Burnout & Recovery', domain: 'Career' },
-  { id: 'hiring', label: 'Hiring & Talent', domain: 'Management' },
-  { id: 'change-management', label: 'Leading Through Change', domain: 'Leadership' },
-  { id: 'promotion', label: 'Getting Promoted', domain: 'Career' },
-  { id: 'meetings', label: 'Meeting Effectiveness', domain: 'Management' },
-  { id: 'remote-leadership', label: 'Remote Leadership', domain: 'Management' },
-  { id: 'emotional-intelligence', label: 'Emotional Intelligence', domain: 'Leadership' },
-  { id: 'influence', label: 'Influence Without Authority', domain: 'Influence' },
-  { id: 'onboarding', label: 'First 90 Days', domain: 'Career' },
-];
 
 interface SessionHeaderProps {
   currentTopic: string;
