@@ -1,0 +1,632 @@
+export type LessonFormat = 'ted-talk' | 'podcast';
+
+export interface LessonSegment {
+  speaker: 'host' | 'guest' | 'narrator';
+  speakerName: string;
+  text: string;
+  timeMs: number;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  format: LessonFormat;
+  domain: string;
+  description: string;
+  durationMins: number;
+  skillLinks: string[];
+  isSkill?: boolean;
+  chapters?: { title: string; timeMs: number }[];
+  script: LessonSegment[];
+  hosts?: { name: string; role: string; gender?: 'male' | 'female' }[];
+}
+
+export const lessons: Lesson[] = [
+  {
+    id: 'l1',
+    title: 'The Art of Saying Hard Things',
+    format: 'ted-talk',
+    domain: 'Leadership',
+    description: 'A structured exploration of why difficult conversations fail — and the three shifts that make them land.',
+    durationMins: 12,
+    skillLinks: ['Difficult Conversations'],
+    chapters: [
+      { title: 'Why we avoid hard conversations', timeMs: 0 },
+      { title: 'The relationship myth', timeMs: 180000 },
+      { title: 'Three shifts that change everything', timeMs: 360000 },
+      { title: 'The opening sentence', timeMs: 540000 },
+      { title: 'What happens after', timeMs: 660000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "In 2019, researchers at Harvard Business School studied 500 managers across 40 companies. They asked a simple question: what's the conversation you've been putting off the longest? The average answer was 14 months. Fourteen months of avoidance, of managed distance, of carefully worded emails designed to say nothing.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "We tell ourselves we're protecting the relationship. We're not. We're protecting ourselves from discomfort, from conflict, from the possibility that honesty might cost us something. But here's what the data actually shows: the relationships that survive the longest are the ones where hard things get said directly.", timeMs: 18000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "There are three shifts that separate leaders who have these conversations well from those who don't. First: separate the person from the pattern. You're not addressing who they are — you're addressing what they did, repeatedly. Your work has been late three times this month is a pattern. You're unreliable is a character attack. One opens a door. The other closes it.", timeMs: 36000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Second shift: lead with curiosity, not conclusions. The worst version of this conversation starts with your verdict already written. The best version starts with a genuine question — Help me understand what's been going on — and means it. You might learn something that changes everything.", timeMs: 54000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Third shift: name the relationship as the reason you're having the conversation, not despite it. I'm bringing this up because I think you're capable of more, and I don't want this to become the thing that limits you. That sentence does more work than any feedback framework ever invented.", timeMs: 72000 },
+    ],
+  },
+  {
+    id: 'l2',
+    title: 'Radical Candor in Practice',
+    format: 'ted-talk',
+    domain: 'Communication',
+    description: 'Beyond the framework — what radical candor actually looks like in a real management relationship.',
+    durationMins: 9,
+    skillLinks: ['Giving Feedback', 'Difficult Conversations'],
+    chapters: [
+      { title: 'What Kim Scott got right', timeMs: 0 },
+      { title: 'Where it breaks down', timeMs: 150000 },
+      { title: 'The 60-second feedback rule', timeMs: 300000 },
+      { title: 'Receiving it', timeMs: 450000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Kim Scott's Radical Candor framework is brilliant in theory and brutally hard in practice. The 2x2 matrix is clean: care personally, challenge directly. But most managers who've read the book end up in obnoxious aggression — they got the challenge part, forgot the care. Or ruinous empathy — they care deeply, say nothing useful.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Here's where it actually breaks down in real management relationships: timing. Most feedback happens too late, too formally, and with too much preamble. The 60-second rule changes this. When you observe something worth addressing — good or bad — you have 60 seconds to say something. Not a meeting. Not a scheduled one on one. Right then.", timeMs: 20000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "That immediacy is what makes feedback feel like coaching instead of evaluation. That question you asked in the meeting just now — that's exactly the kind of strategic thinking I want you to bring more of. Fourteen words. No meeting required. Relationship deepened.", timeMs: 40000 },
+    ],
+  },
+  {
+    id: 'l3',
+    title: 'Managing Up: A Real Conversation',
+    format: 'podcast',
+    domain: 'Career',
+    description: 'Two coaches break down what managing up actually means — and what most people get completely wrong about it.',
+    durationMins: 14,
+    skillLinks: ['Managing Up'],
+    hosts: [
+      { name: 'Alex', role: 'Host', gender: 'female' },
+      { name: 'Jordan', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Alex', text: "So Jordan, managing up. Everyone talks about it. Most people I coach have no idea what it actually means beyond be nice to your boss. What's the real definition?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Jordan', text: "Right, so the popular version is exactly what you said — charm your executive, make them like you, never bring them problems. That's not managing up. That's managing your own anxiety. Real managing up is about making your boss successful so that you become indispensable to their success.", timeMs: 12000 },
+      { speaker: 'host', speakerName: 'Alex', text: "Okay, unpack that. Because that sounds simple but I think there's a lot in there.", timeMs: 28000 },
+      { speaker: 'guest', speakerName: 'Jordan', text: "The core of it is understanding what your boss actually cares about — not what they say they care about in all-hands meetings, but what keeps them up at 2am. What's the thing that if it goes wrong, their year goes wrong? Once you know that, you orient your work around protecting them from that outcome.", timeMs: 35000 },
+      { speaker: 'host', speakerName: 'Alex', text: "And how do you find that out? Because most executives aren't going to sit you down and say here's my existential fear.", timeMs: 58000 },
+      { speaker: 'guest', speakerName: 'Jordan', text: "You watch what they ask about most in meetings. You notice which updates make them visibly relax. You ask directly — what would make this quarter a win for you, specifically? Most executives have never been asked that by a direct report and it lands hard.", timeMs: 68000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What's the biggest mistake people make when they think they're managing up but they're actually doing the opposite?", timeMs: 90000 },
+      { speaker: 'guest', speakerName: 'Jordan', text: "Escalating problems without solutions. Every time you walk into your boss's office with a problem and no options, you're training them to see you as someone who creates work for them. The move is always: here's the problem, here are three ways I could handle it, here's what I recommend and why. You're not asking for permission. You're asking for alignment.", timeMs: 100000 },
+      { speaker: 'host', speakerName: 'Alex', text: "That's a completely different posture. You're showing up as a peer, not a subordinate.", timeMs: 128000 },
+      { speaker: 'guest', speakerName: 'Jordan', text: "Exactly. And that's the long game. The people who get promoted aren't the ones who execute tasks perfectly. They're the ones their boss can't imagine not having in the room.", timeMs: 136000 },
+    ],
+  },
+  {
+    id: 'l4',
+    title: 'Delegation Without Losing Control',
+    format: 'podcast',
+    domain: 'Management',
+    description: "An honest conversation about why smart managers still can't let go — and the mental model that fixes it.",
+    durationMins: 11,
+    skillLinks: ['Delegation & Trust'],
+    hosts: [
+      { name: 'Alex', role: 'Host', gender: 'female' },
+      { name: 'Sam', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Alex', text: "Sam, I hear the same thing constantly from mid-level managers: I know I need to delegate more, but every time I do, it comes back wrong and I end up doing it myself anyway. What's actually going on there?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Sam', text: "What's going on is that they never actually delegated. They assigned. There's a huge difference. Assignment is go do this. Delegation is here's the outcome I need, here's why it matters, here's the latitude you have, here's when I want an update. Assignment sets people up to fail. Delegation sets them up to own something.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Alex', text: "But even when managers do that, they still can't resist checking in constantly. The micromanagement thing is real.", timeMs: 42000 },
+      { speaker: 'guest', speakerName: 'Sam', text: "Because they've confused accountability with control. Accountability is I need to know this will get done. Control is I need to be involved in how it gets done. Once you've hired someone and trained them, your job is accountability — not control. The daily check-ins are control dressed up as accountability.", timeMs: 52000 },
+      { speaker: 'host', speakerName: 'Alex', text: "So what's the mental model shift?", timeMs: 80000 },
+      { speaker: 'guest', speakerName: 'Sam', text: "Think of yourself as a board member, not a COO. A board member sets direction, asks hard questions, and gets out of the way. A COO is in the operations. Most managers are accidental COOs of tasks they should have board-membered. Ask yourself for each task: am I a board member here or a COO? If you're a COO and you shouldn't be, that's the delegation opportunity.", timeMs: 88000 },
+      { speaker: 'host', speakerName: 'Alex', text: "I love that. Board member versus COO. Last question: what do you tell someone whose direct report genuinely keeps dropping the ball? Is that still a delegation problem?", timeMs: 120000 },
+      { speaker: 'guest', speakerName: 'Sam', text: "Sometimes, yes — the setup was bad. But if you've delegated clearly and the work keeps coming back wrong, that's a different conversation entirely. That's a performance conversation, not a delegation conversation. Don't confuse the two. Fixing your delegation won't fix a performance problem.", timeMs: 132000 },
+    ],
+  },
+  {
+    id: 'l5',
+    title: 'The Psychology of Executive Presence',
+    format: 'ted-talk',
+    domain: 'Leadership',
+    description: 'What executive presence actually is — and why it has nothing to do with confidence, charisma, or how you dress.',
+    durationMins: 10,
+    skillLinks: ['Leadership Presence'],
+    chapters: [
+      { title: 'What presence is not', timeMs: 0 },
+      { title: "The signal you're actually sending", timeMs: 200000 },
+      { title: 'The four presence drivers', timeMs: 400000 },
+      { title: 'The room reads you', timeMs: 600000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Executive presence is one of the most requested coaching topics and one of the most misunderstood. People want it. Organizations demand it. Nobody can quite define it. The popular version is confidence, charisma, how you carry yourself. That version is wrong — or at least dangerously incomplete.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Presence is actually about one thing: does the room believe you've already decided? When a leader with genuine presence walks into a meeting, there's a quality of settledness — a sense that this person knows where they're going and has already done the hard thinking. That settledness is what the room reads as presence.", timeMs: 15000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The four drivers of actual executive presence. First: clarity over completeness. Leaders without presence over-explain. They give you the whole journey when you need the destination. Leaders with presence give conclusions first, then reasoning if asked. Here's what I recommend. Here's why. Questions? That's a different posture entirely.", timeMs: 35000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Second: comfort with silence. The biggest presence killer is the reflexive fill — the um, the good question, the throat-clearing. Presence is the willingness to take three seconds after a question before you answer. That pause reads as thought. Thought reads as confidence.", timeMs: 58000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Third: physical stillness. People with presence don't fidget, don't break eye contact to think, don't shift in their chair when challenged. Stillness is authority. Movement is anxiety. This is learnable — it just requires you to notice when your body is performing your uncertainty for the room.", timeMs: 76000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Fourth: selective speech. Presence is not saying more. It's saying less, and meaning all of it. Every word you speak should be load-bearing. If you're adding filler, hedging, or over-qualifying, you're diluting the signal. Say the thing. Stop. Let it land.", timeMs: 96000 },
+    ],
+  },
+  {
+    id: 'l6',
+    title: 'Strategy vs. Tactics: Why Most Leaders Are Stuck in the Weeds',
+    format: 'podcast',
+    domain: 'Strategy',
+    description: 'A frank conversation about the hardest transition in leadership — from doer to thinker.',
+    durationMins: 13,
+    skillLinks: ['Strategic Thinking'],
+    hosts: [
+      { name: 'Alex', role: 'Host', gender: 'male' },
+      { name: 'Morgan', role: 'Guest Coach', gender: 'female' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Alex', text: "Morgan, the jump from tactical to strategic thinking is something I see people struggle with at every level. Director level, VP level, even C-suite. Why is it so hard?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Morgan', text: "Because tactical success is what got them promoted. They were great at execution, at solving immediate problems, at being the person who knew how things worked. And then they get promoted and suddenly the job is to think in years, not days. Nobody told them that. Nobody trained them for it. So they default to what made them successful.", timeMs: 12000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What does being stuck in the weeds actually look like from the outside?", timeMs: 40000 },
+      { speaker: 'guest', speakerName: 'Morgan', text: "You know someone's stuck tactically when they can tell you everything about how something works but can't tell you why it matters to the company's direction in three years. They optimize what exists instead of questioning whether it should exist. They're incredibly busy and somehow nothing changes.", timeMs: 50000 },
+      { speaker: 'host', speakerName: 'Alex', text: "So what's the shift? How do you actually start thinking strategically if you haven't been?", timeMs: 78000 },
+      { speaker: 'guest', speakerName: 'Morgan', text: "Three practices. One: force yourself to work backwards from a three-year outcome, not forward from today's problem. Two: ask what would have to be true for your current approach to fail catastrophically — then take those answers seriously. Three: protect time that is explicitly for thinking, not doing. No agenda, no output. Just thinking. Most leaders treat thinking time as a luxury. It's actually the job.", timeMs: 88000 },
+      { speaker: 'host', speakerName: 'Alex', text: "That last one is brutal because organizations reward visible busyness.", timeMs: 122000 },
+      { speaker: 'guest', speakerName: 'Morgan', text: "Completely. And it's a trap. The most strategically valuable thing a senior leader can do in a given week might look like they did nothing. They read, they thought, they had one conversation that shifted their mental model. That's the job at the senior level. If your calendar is back-to-back, you're not doing strategy. You're a very expensive tactician.", timeMs: 130000 },
+    ],
+  },
+
+  // NEW LESSONS
+
+  {
+    id: 'l7',
+    title: 'The First 90 Days in a New Role',
+    format: 'ted-talk',
+    domain: 'Career',
+    description: 'Why arriving with an agenda is a trap — and the framework that helps new leaders earn the right to act.',
+    durationMins: 8,
+    isSkill: true,
+    skillLinks: ['Onboarding'],
+    chapters: [
+      { title: 'Arrive without an agenda', timeMs: 0 },
+      { title: 'Map the landscape before acting', timeMs: 120000 },
+      { title: 'The 30-60-90 day framework', timeMs: 280000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "The most dangerous thing a new leader can do in their first week is show up with answers. You've been hired because of what you know, so your instinct is to demonstrate that knowledge immediately. That instinct will cost you. The people who've been in the room longer than you know things that don't appear on any org chart — and if you arrive with a playbook, they'll stop telling you what they know.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The first 30 days is a listening and mapping exercise, full stop. Your job is to understand the real decision-making structure — not the one on the slide — the informal power centers, the unspoken rules, the failure modes that everyone talks about in the parking lot but nobody mentions in meetings. Ask each person the same set of questions: What's working that we should protect? What's broken that nobody's talking about? What would you do if you were me? Then listen harder than you've ever listened.", timeMs: 20000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Days 31 through 90 is where you begin to act — but only on what the landscape has confirmed, not what you assumed coming in. The 30-60-90 framework isn't a checklist. It's a commitment to earning the right to influence before you try to change things. Leaders who skip this phase make changes that technically work but organizationally fail, because they never understood what they were actually changing.", timeMs: 50000 },
+    ],
+  },
+
+  {
+    id: 'l8',
+    title: 'Why Smart People Give Bad Presentations',
+    format: 'ted-talk',
+    domain: 'Communication',
+    description: 'The cognitive trap that turns expertise into noise — and the one-idea rule that fixes it.',
+    durationMins: 7,
+    isSkill: true,
+    skillLinks: ['Presentations'],
+    chapters: [
+      { title: 'Confusing knowledge with communication', timeMs: 0 },
+      { title: "The audience's job vs your job", timeMs: 100000 },
+      { title: 'The one-idea rule', timeMs: 240000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "The smarter you are about a subject, the worse your presentations tend to be. This sounds backwards, but the research backs it up. When you know a lot, you feel an obligation to share it — all of it. The result is a presentation that proves your expertise and communicates almost nothing. Your audience leaves knowing you know things. They don't leave knowing what to do with any of it.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Here's the distinction most presenters miss: your job is not to transfer information. Your job is to produce a specific reaction in a specific audience. Those are completely different briefs. Information transfer is about you and what you know. Producing a reaction is about them and what they need to feel, believe, or decide differently after hearing you. The audience's job is to receive one clear idea and act on it. Your job is to make sure that idea is unmissable.", timeMs: 18000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The one-idea rule: every great presentation can be summarized in a single sentence that a 12-year-old could repeat. If you can't write that sentence before you build the deck, you're not ready to present. Everything else — the data, the stories, the slides — is just support structure for that one idea. When you've done this right, people walk out of your presentation and tell someone else what you said, in your words, without any prompting. That's when you know it landed.", timeMs: 40000 },
+    ],
+  },
+
+  {
+    id: 'l9',
+    title: 'The Science of Persuasion',
+    format: 'ted-talk',
+    domain: 'Influence',
+    description: "Cialdini's principles applied to real organizational decisions — and the timing that makes all the difference.",
+    durationMins: 9,
+    isSkill: false,
+    skillLinks: ['Influence'],
+    chapters: [
+      { title: "Cialdini's six principles", timeMs: 0 },
+      { title: 'Reciprocity in business', timeMs: 90000 },
+      { title: 'The contrast principle', timeMs: 220000 },
+      { title: 'Timing your ask', timeMs: 340000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Robert Cialdini spent thirty years studying influence — not manipulation, but the legitimate psychological mechanisms that make people more open to changing their minds. His six principles — reciprocity, commitment, social proof, authority, liking, and scarcity — are now cited in every sales training program on earth. Most of those programs miss the point entirely. The principles aren't a checklist you run through. They're a map of how trust gets built or broken before the ask ever happens.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Reciprocity is the most underused principle in professional settings. People are psychologically hardwired to return favors — not because they're transactional, but because reciprocity is how social bonds get established. In business, this means the most influential people in any organization are the ones who give things away without keeping score: information, introductions, credit, time. They're not doing this strategically in the moment. They've built a reservoir of goodwill that makes people want to say yes when they eventually ask for something.", timeMs: 20000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The contrast principle is deceptively powerful. Your proposal doesn't exist in isolation — it exists next to whatever was considered before it. A 500,000 dollar budget request feels enormous until it's preceded by a two million dollar alternative. A modest proposal feels conservative after an aggressive one. Skilled influencers understand that framing the contrast is often more important than the proposal itself. What you put in front of your ask shapes how the ask is received.", timeMs: 45000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Timing your ask is the piece most people get wrong. People say yes more readily immediately after a win, when they've just committed to something publicly, or when they feel they owe you something. They say no more readily when they're overwhelmed, when they're being asked in a group where social pressure creates resistance, or when they haven't yet decided to trust you. The quality of your ask matters far less than the moment you choose to make it.", timeMs: 68000 },
+    ],
+  },
+
+  {
+    id: 'l10',
+    title: 'Building Psychological Safety on Your Team',
+    format: 'ted-talk',
+    domain: 'Leadership',
+    description: "Amy Edmondson's research made the concept famous. This talk makes it practical.",
+    durationMins: 8,
+    isSkill: true,
+    skillLinks: ['Team Culture'],
+    chapters: [
+      { title: "Edmondson's research", timeMs: 0 },
+      { title: 'The cost of silence', timeMs: 130000 },
+      { title: 'Four practices to start tomorrow', timeMs: 280000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "In the late 1990s, Harvard Business School professor Amy Edmondson set out to study medical errors in hospitals. She expected to find that better teams made fewer errors. What she found instead was the opposite: the best teams reported more errors. Not because they were making more mistakes — because they felt safe enough to admit the mistakes they made. That insight reframed everything we thought we knew about high-performing teams.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The cost of silence is not silence — it's the decisions that never get challenged, the assumptions that never get questioned, the early warning signals that get swallowed by people who learned that speaking up isn't worth the risk. In organizations without psychological safety, the best ideas die before they reach the room. The people with the most relevant information — those closest to the work — are often the ones with the least permission to share it.", timeMs: 22000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Four practices you can implement this week. First: model fallibility — openly name your own mistakes and uncertainties. Second: frame work as a learning problem, not just an execution problem. Third: respond visibly to bad news — your first reaction to a problem tells the whole team whether it's safe to tell you things. Fourth: reward the question, not just the answer. Teams that ask better questions outperform teams that execute faster on the wrong assumptions.", timeMs: 48000 },
+    ],
+  },
+
+  {
+    id: 'l11',
+    title: "How to Run Meetings That Don't Waste Everyone's Time",
+    format: 'ted-talk',
+    domain: 'Management',
+    description: 'Three structural principles that turn meetings from obligation into leverage.',
+    durationMins: 6,
+    isSkill: true,
+    skillLinks: ['Meeting Effectiveness'],
+    chapters: [
+      { title: 'The no-agenda, no-meeting rule', timeMs: 0 },
+      { title: 'Decision vs. discussion', timeMs: 110000 },
+      { title: 'Clear owners before you close', timeMs: 240000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "The average knowledge worker loses 31 hours a month to unproductive meetings — that's nearly four full workdays. The problem isn't that meetings happen. The problem is that most meetings don't have a clear reason to exist. The no-agenda, no-meeting rule is exactly what it sounds like: if there is no written agenda distributed before the meeting, the meeting doesn't happen. This isn't harsh — it's respectful. It says that everyone in the room deserves to know why they're there.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The most important distinction in meeting design is decision versus discussion. A decision meeting exists to make a specific call: we are doing X, not Y. A discussion meeting exists to surface perspectives before a decision is ready to be made. Most meetings fail because they try to be both — they discuss endlessly but make no decision, and everyone leaves unclear on what changed. Categorize every agenda item before the meeting starts: is this a decision item or a discussion item? Different types require different facilitation, different participants, and different time allocations.", timeMs: 18000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The last three minutes of any productive meeting should answer three questions: What did we decide? Who owns what by when? Who else needs to know? If you can't answer all three, you didn't actually finish the meeting — you just ran out of time. The practice of naming owners before you close is what separates meetings that generate momentum from meetings that generate more meetings.", timeMs: 40000 },
+    ],
+  },
+
+  {
+    id: 'l12',
+    title: 'Negotiation Without the Adversarial BS',
+    format: 'ted-talk',
+    domain: 'Influence',
+    description: "Getting to yes without turning every negotiation into a fight — and knowing exactly when to walk.",
+    durationMins: 10,
+    isSkill: false,
+    skillLinks: ['Negotiation'],
+    chapters: [
+      { title: 'Interest vs. position', timeMs: 0 },
+      { title: 'The power of silence after an offer', timeMs: 120000 },
+      { title: 'Anchoring', timeMs: 260000 },
+      { title: 'When to walk', timeMs: 390000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Most people negotiate positions — the number they want, the terms they've decided on, the outcome they're committed to before the conversation starts. Getting to Yes, the seminal Harvard negotiation text, made a distinction that changes everything: positions are what you say you want. Interests are why you want it. When two parties are stuck on positions, they get nowhere. When they explore interests, they almost always find a path neither had considered. The question that unlocks this: why does this matter to you?", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "After you make an offer, stop talking. This is uncomfortable, but it's one of the highest-leverage moves in negotiation. The person who speaks first after an offer is usually making a concession. The silence isn't a vacuum — it's pressure. Your counterpart fills it by negotiating against themselves, by revealing what they actually care about, or by accepting terms they'd have pushed back on if you'd kept talking. Three to five seconds of silence after an offer is worth more than any counter-argument you could make.", timeMs: 22000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Anchoring is the cognitive phenomenon where the first number in a negotiation disproportionately shapes every number that follows. If you anchor high — or low, depending on which side you're on — the entire negotiation range shifts in your favor, even if both parties know exactly what's happening. The research on this is remarkably consistent: the first number stated has real gravity. Whoever anchors first has structural advantage. This doesn't mean being unreasonable — it means not letting someone else set the frame before you do.", timeMs: 48000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Knowing when to walk requires you to have defined your BATNA — your Best Alternative To a Negotiated Agreement — before you sit down. Your BATNA is your real leverage, not the arguments you've prepared or the relationship you're protecting. If the deal on the table is worse than your best alternative, you walk. The problem is most people haven't done this math before they negotiate. They're so focused on reaching agreement that they forget agreement is only valuable if the terms are actually worth accepting.", timeMs: 72000 },
+    ],
+  },
+
+  {
+    id: 'l13',
+    title: 'The Feedback Loop That Actually Works',
+    format: 'ted-talk',
+    domain: 'Management',
+    description: 'Why most feedback fails to change anything — and the model that makes it land every time.',
+    durationMins: 7,
+    isSkill: true,
+    skillLinks: ['Giving Feedback'],
+    chapters: [
+      { title: 'The SBI model: Situation-Behavior-Impact', timeMs: 0 },
+      { title: 'The timing problem', timeMs: 140000 },
+      { title: 'Asking for feedback upward', timeMs: 270000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "The SBI model is the most practical feedback framework I've found after twenty years of coaching. Situation: describe the specific context — not in general, but this meeting, this report, this conversation. Behavior: describe exactly what you observed — not your interpretation of it, not what it means about the person, just the observable action. Impact: describe the effect it had on you, the team, or the outcome. That structure takes feedback from personal to professional, from subjective to factual. It makes the conversation about the work, not the person.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The timing problem with feedback is almost universal: we wait too long. We wait for the formal review cycle, the scheduled one-on-one, the right moment that never quite arrives. By the time the feedback is delivered, the behavior in question is weeks old and the person can barely remember the context. The most effective feedback is specific and recent. The window is 24 to 48 hours maximum. After that, the feedback is still technically accurate, but it's no longer actionable in the way that changes behavior in real time.", timeMs: 22000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The most powerful thing you can do as a leader is model the practice of asking for feedback upward. When you ask your team how you're doing — and mean it — you do three things at once. You normalize the behavior for everyone. You get information you genuinely need. And you demonstrate that feedback flows in both directions, which is the only kind of culture where feedback actually changes things. The question to ask: what's one thing I do that makes it harder for you to do your best work?", timeMs: 48000 },
+    ],
+  },
+
+  {
+    id: 'l14',
+    title: 'Burnout: What It Really Is and How to Come Back',
+    format: 'podcast',
+    domain: 'Career',
+    description: 'Beyond the buzzword — the clinical reality of burnout and the recovery strategies that actually work.',
+    durationMins: 13,
+    isSkill: false,
+    skillLinks: ['Burnout Recovery'],
+    hosts: [
+      { name: 'Alex', role: 'Host', gender: 'female' },
+      { name: 'Casey', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Alex', text: "Casey, burnout has become one of those words people use to mean anything from I'm tired to I had a complete breakdown. What's the actual clinical definition, and why does it matter to get it right?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Casey', text: "The WHO definition has three components: exhaustion, cynicism, and reduced professional efficacy. What's critical is that burnout isn't about being tired — you can fix tired with a vacation. Burnout is a state of chronic depletion that changes how you relate to your work fundamentally. The cynicism piece is the diagnostic flag: when you start feeling that nothing you do matters, that the work is pointless, that's not stress. That's burnout.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What causes it? Because I think most people assume it's just overwork, but that can't be the full picture.", timeMs: 45000 },
+      { speaker: 'guest', speakerName: 'Casey', text: "Overwork is a contributor, but the research consistently shows it's not the primary driver. The six domains that predict burnout are: workload, control, reward, community, fairness, and values. You can work incredibly hard and not burn out if you have autonomy, feel recognized, trust your colleagues, and believe the work is meaningful. Conversely, you can work moderate hours and still burn out completely if those six factors are broken. The most common culprit I see in my practice is the combination of low control and low recognition — you're doing a lot, nobody sees it, and you have no say in how it gets done.", timeMs: 58000 },
+      { speaker: 'host', speakerName: 'Alex', text: "How do you come back from it? What's the actual recovery arc?", timeMs: 100000 },
+      { speaker: 'guest', speakerName: 'Casey', text: "Recovery has two phases that most people try to collapse into one. Phase one is restoration — genuinely stepping back, not just taking a long weekend, but creating enough distance from the demands that your nervous system can actually down-regulate. For some people that's a week. For clinical burnout it might be months. You cannot shortcut this phase.", timeMs: 112000 },
+      { speaker: 'host', speakerName: 'Alex', text: "And phase two?", timeMs: 140000 },
+      { speaker: 'guest', speakerName: 'Casey', text: "Phase two is redesign. You can't return to the exact conditions that burned you out and expect a different result. Something structural has to change — your boundaries, your role, your relationship with your work, sometimes the job itself. The mistake people make is jumping straight to redesign without doing the restoration first. They come back too fast, hit the same wall, and the second burnout is worse than the first.", timeMs: 148000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What's the one thing someone in the early stages of burnout should do right now?", timeMs: 182000 },
+      { speaker: 'guest', speakerName: 'Casey', text: "Name it out loud to someone you trust. Not I've been stressed — actually say I think I'm burning out. The moment you say it, you stop managing it privately and start taking it seriously. And you give someone else permission to help. That conversation is the beginning of the recovery arc, even if nothing changes yet.", timeMs: 193000 },
+    ],
+  },
+
+  {
+    id: 'l15',
+    title: 'The Art of the Pivot: Changing Direction Without Losing Credibility',
+    format: 'podcast',
+    domain: 'Strategy',
+    description: 'How to change course decisively without looking like you had no idea what you were doing.',
+    durationMins: 11,
+    isSkill: false,
+    skillLinks: ['Strategic Agility'],
+    hosts: [
+      { name: 'Dana', role: 'Host', gender: 'female' },
+      { name: 'Marcus', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Dana', text: "Marcus, leaders are told to be decisive, to commit, to not waver. But sometimes you just have to change direction. How do you do that without looking like you had no idea what you were doing?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Marcus', text: "The framing that kills credibility is when a pivot looks like an admission of failure. It doesn't have to be that. The leaders who pivot well frame it as a response to new information — and they're explicit about what that information is. I committed to X based on what we knew in January. What we've learned since then changes the calculus in three specific ways. That's not weakness. That's intellectual honesty.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Dana', text: "But people are already skeptical. They've reorganized, they've changed their projects, they've built plans around the direction you set. What do you do with that?", timeMs: 50000 },
+      { speaker: 'guest', speakerName: 'Marcus', text: "You acknowledge the cost directly. Nothing erodes trust faster than a leader who pivots and then acts like it was painless. The people who reorganized, who built plans around the old direction — they made real investments. Name that. Say: I know this creates real disruption for you, and I'm not minimizing that. That acknowledgment doesn't undo the disruption, but it signals that you understand what you're asking people to absorb.", timeMs: 62000 },
+      { speaker: 'host', speakerName: 'Dana', text: "What about the team members who were vocal advocates for the old direction? They've got ego in the game now.", timeMs: 98000 },
+      { speaker: 'guest', speakerName: 'Marcus', text: "That's actually an opportunity. Bring them into the pivot conversation before the announcement. Not to convince them — to get their input. Ask: given where we're heading, what do we need to protect from the work we've done? What would I be missing if I didn't think this through with you? People who feel consulted on a change are dramatically more likely to own the execution of it.", timeMs: 110000 },
+      { speaker: 'host', speakerName: 'Dana', text: "Is there such a thing as pivoting too fast?", timeMs: 146000 },
+      { speaker: 'guest', speakerName: 'Marcus', text: "Absolutely. There's a difference between being responsive to new information and being reactive to every new piece of data. Reactive leaders signal to their teams that strategy is whatever the last smart person in the room argued for. The test I use: have at least three independent data points telling you the same thing before you change direction. One data point is a signal. Three is a pattern worth pivoting on.", timeMs: 155000 },
+    ],
+  },
+
+  {
+    id: 'l16',
+    title: 'Hiring for Potential, Not Just Experience',
+    format: 'podcast',
+    domain: 'Management',
+    description: 'The interview practices that reveal how someone thinks — not just what they know.',
+    durationMins: 12,
+    isSkill: false,
+    skillLinks: ['Hiring'],
+    hosts: [
+      { name: 'Alex', role: 'Host', gender: 'female' },
+      { name: 'Reed', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Alex', text: "Reed, most hiring processes are designed to surface experience — past roles, past outcomes, past responsibilities. But in fast-moving environments, you're often hiring for what someone could do, not what they've already done. How do you interview for that?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Reed', text: "The core shift is from behavioral interviews to learning interviews. Behavioral questions — tell me about a time you did X — reveal what someone has done before. Learning questions reveal how someone processes challenge and uncertainty. The best one I know: tell me about something you got completely wrong, realized it late, and then had to fix. I'm not looking for the story. I'm looking at how they narrate their own failure.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What does a good answer look like on that question?", timeMs: 50000 },
+      { speaker: 'guest', speakerName: 'Reed', text: "Specificity without defensiveness. They can name exactly what they got wrong and why, they don't blame the environment, and they've extracted a principle from the experience that they now apply. The candidates who struggle with this question either can't find a real example — which usually means they don't reflect much — or they find one and spend the whole time explaining why it wasn't really their fault. Neither signals the kind of learning agility you need.", timeMs: 62000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What about the candidates who look amazing on paper but something feels off in the room?", timeMs: 100000 },
+      { speaker: 'guest', speakerName: 'Reed', text: "Trust it. Not as a final decision, but as a flag worth investigating. The question to ask yourself is: what specifically feels off? Is it that they're not curious? Is it that they talk about their teams as resources rather than people? Name the thing you're reacting to. Then test it directly in the interview. You're allowed to say: I'm curious about something — can I push on this a bit?", timeMs: 114000 },
+      { speaker: 'host', speakerName: 'Alex', text: "Final question: what's the most underrated thing to look for in a candidate?", timeMs: 155000 },
+      { speaker: 'guest', speakerName: 'Reed', text: "Questions. What a candidate asks you tells you more about how they think than everything they've answered. Candidates who ask about the hardest problem facing the team, about what success looks like in year two, about where the last person in this role struggled — those are people who are already thinking like owners. Candidates who don't ask anything, or who ask about benefits on the first interview — that's telling you something too.", timeMs: 167000 },
+    ],
+  },
+
+  {
+    id: 'l17',
+    title: 'Leading Through Uncertainty',
+    format: 'podcast',
+    domain: 'Leadership',
+    description: "How the best leaders hold a team together when nobody knows what's coming next.",
+    durationMins: 14,
+    isSkill: false,
+    skillLinks: ['Change Leadership'],
+    hosts: [
+      { name: 'Jordan', role: 'Host', gender: 'male' },
+      { name: 'Priya', role: 'Guest Coach', gender: 'female' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Jordan', text: "Priya, uncertainty is a constant now — economic volatility, organizational change, market shifts. But leading through uncertainty is a skill most leaders were never taught. What separates the ones who do it well?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Priya', text: "The leaders who navigate uncertainty well have made a fundamental peace with not knowing. Most leaders experience not knowing as a threat to their authority, so they fill the gap with false confidence — confident-sounding statements about a future they can't actually see. Their teams feel the mismatch immediately. Trust erodes. The leaders who do this well say: here's what we know, here's what we don't, and here's how we're going to make decisions in that fog.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Jordan', text: "How do you communicate that without creating panic or paralysis in the team?", timeMs: 55000 },
+      { speaker: 'guest', speakerName: 'Priya', text: "The communication architecture matters enormously. People can tolerate uncertainty about outcomes when they have certainty about process — about how decisions will be made, who will be informed and when, what they can count on even as things change. So the leader's job isn't to eliminate uncertainty. It's to give people something solid to stand on while the ground shifts. That might be values, a decision framework, or a consistent communication cadence.", timeMs: 68000 },
+      { speaker: 'host', speakerName: 'Jordan', text: "What about the leader's own anxiety? They're humans too. How do they manage that while also being the stable presence for their team?", timeMs: 112000 },
+      { speaker: 'guest', speakerName: 'Priya', text: "You need somewhere to put it that isn't the team. A peer, a coach, a board member — someone you can be genuinely uncertain with. The worst thing that happens is when leaders use their teams as emotional support for their own anxiety. The team is looking to you to be a container for their anxiety. If you're using them to contain yours, the whole system becomes anxious.", timeMs: 126000 },
+      { speaker: 'host', speakerName: 'Jordan', text: "How do you keep people motivated when the destination keeps changing?", timeMs: 172000 },
+      { speaker: 'guest', speakerName: 'Priya', text: "Motivation in uncertainty comes from agency, not certainty. People can stay engaged when they feel like they're contributing to something real, even if the full picture isn't clear. Give people meaningful work with real stakes. Let them make real decisions. Connect them to what will stay constant — the mission, the values, the people they're working alongside. You don't need a clear destination to have a motivated team. You need people to feel like they matter to the journey.", timeMs: 184000 },
+      { speaker: 'host', speakerName: 'Jordan', text: "Last one: how do you know when you've led through it well?", timeMs: 228000 },
+      { speaker: 'guest', speakerName: 'Priya', text: "When people tell each other what you said, in your words, and it helped them. Not because you had the answers — but because you gave them a way to think about a situation that made them more capable. The best uncertain-times leaders don't resolve the uncertainty. They help their teams develop a relationship with it that doesn't paralyze them.", timeMs: 240000 },
+    ],
+  },
+
+  {
+    id: 'l18',
+    title: 'The Politics of Getting Promoted',
+    format: 'podcast',
+    domain: 'Career',
+    description: 'What actually drives promotion decisions — and the visibility game most high performers are losing.',
+    durationMins: 13,
+    isSkill: false,
+    skillLinks: ['Career Advancement'],
+    hosts: [
+      { name: 'Alex', role: 'Host', gender: 'female' },
+      { name: 'Tyler', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Alex', text: "Tyler, I've worked with so many people who do excellent work, get great reviews, and still get passed over for promotion. What's happening there?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Tyler', text: "What's happening is that promotion isn't a performance review outcome — it's an organizational decision. And organizational decisions are made by people, which means they're influenced by perception, relationships, and politics. High performers often hate that reality and spend their energy resenting it. The people who get promoted learn to work with it.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Alex', text: "So what does working with it look like without becoming someone who just plays politics and does no real work?", timeMs: 46000 },
+      { speaker: 'guest', speakerName: 'Tyler', text: "It starts with understanding who actually makes promotion decisions and what they need to be true about you to feel comfortable saying your name in the room. In most organizations it's a cohort of senior leaders who have to collectively agree. Which means you need relationships across that cohort. The question is: how many of those decision-makers have directly observed your impact in the last six months?", timeMs: 58000 },
+      { speaker: 'host', speakerName: 'Alex', text: "And if the answer is very few?", timeMs: 97000 },
+      { speaker: 'guest', speakerName: 'Tyler', text: "Then visibility is your project. Not self-promotion in a gross way — strategic contribution in places where senior leaders can see it. Volunteer for the cross-functional work, the presentations to leadership, the problem that doesn't technically fall under your role but matters to someone above your manager. The people who get promoted are rarely the best at their current job. They're the people senior leaders can already imagine in the next role.", timeMs: 108000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What's the role of sponsorship versus mentorship in this?", timeMs: 148000 },
+      { speaker: 'guest', speakerName: 'Tyler', text: "Huge distinction. A mentor gives you advice. A sponsor puts your name in rooms you're not in. The way you build sponsorship is by delivering results that make a senior person look good. When your success is tied to their success, they become invested in your advancement.", timeMs: 160000 },
+      { speaker: 'host', speakerName: 'Alex', text: "And for someone who's been passed over — what do they do now?", timeMs: 198000 },
+      { speaker: 'guest', speakerName: 'Tyler', text: "First, get honest feedback. Ask your manager: what would need to be true about me for this conversation to go differently? Then take the answer seriously, even if it's uncomfortable. The worst response to being passed over is to double down on doing your current job better. That signals you don't understand what the next level requires.", timeMs: 210000 },
+    ],
+  },
+
+  {
+    id: 'l19',
+    title: 'When Your Team Resists Change',
+    format: 'podcast',
+    domain: 'Leadership',
+    description: 'What resistance actually tells you — and how to lead through it without losing people.',
+    durationMins: 11,
+    isSkill: false,
+    skillLinks: ['Change Management'],
+    hosts: [
+      { name: 'Sam', role: 'Host', gender: 'female' },
+      { name: 'Devon', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Sam', text: "Devon, you've worked with a lot of leaders who are trying to drive change and running into walls. What's the first thing you tell them when their team is resisting?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Devon', text: "I tell them to stop calling it resistance. That word frames the team as the problem. What you're actually seeing is information — about fear, about unclear communication, about legitimate concerns that haven't been addressed. Resistance is almost always a symptom, not the disease. Leaders who treat it as the disease waste months trying to overcome something they should be trying to understand.", timeMs: 12000 },
+      { speaker: 'host', speakerName: 'Sam', text: "So what questions do you ask to find the real source of it?", timeMs: 48000 },
+      { speaker: 'guest', speakerName: 'Devon', text: "Three questions I ask every resisting team member. One: what do you think we'll lose if this change goes through? Most change resistance is about loss, not about the change itself. Two: what would need to be true for you to feel confident this is going in the right direction? Three: what do you know about this situation that I might be missing? That one lands hard, because it signals that you're treating their pushback as expertise, not obstruction.", timeMs: 60000 },
+      { speaker: 'host', speakerName: 'Sam', text: "What about the person who just flat refuses? Who's been around long enough to outlast change initiatives before?", timeMs: 102000 },
+      { speaker: 'guest', speakerName: 'Devon', text: "That person needs a direct conversation about what's actually at stake. Not a pep talk about the change — a real conversation about their future in the organization if the change succeeds and they're not part of it. You can say it with genuine respect and still say it clearly: I need you on this, and if you can't get there, we need to talk about what that means. Ignoring entrenched resistance teaches everyone that it works.", timeMs: 116000 },
+      { speaker: 'host', speakerName: 'Sam', text: "How long do you give people to come around before it becomes a performance issue?", timeMs: 154000 },
+      { speaker: 'guest', speakerName: 'Devon', text: "There's no universal timeline — it depends on how disruptive the behavior is and how visible it is to others. But the question I ask leaders is: if this person's behavior became the team norm, what would happen? If the answer is the change fails, you're past the coaching window. The good news is that most people who resist change are scared, not saboteurs. Fear responds to evidence. Show them evidence that the change is working and most of them will come around.", timeMs: 166000 },
+    ],
+  },
+
+  {
+    id: 'l20',
+    title: 'Decision Fatigue and the Leader Who Decides Too Much',
+    format: 'ted-talk',
+    domain: 'Leadership',
+    description: "Why over-centralizing decisions is a leadership failure — and how to build a team that doesn't need you for every call.",
+    durationMins: 8,
+    isSkill: true,
+    skillLinks: ['Decision Making'],
+    chapters: [
+      { title: 'The decision tax', timeMs: 0 },
+      { title: 'Building a decision architecture', timeMs: 150000 },
+      { title: 'The decisions only you should make', timeMs: 300000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Every decision you make costs something — not just time, but cognitive capacity. Researchers at Ben Gurion University famously studied parole board decisions and found that judges granted parole roughly 65% of the time right after a meal, and almost never right before one. Decision quality degrades with decision volume. The leader who is in every decision, who approves every hire, who signs off on every communication — that leader is not managing their organization. They are becoming the bottleneck of it.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Building a decision architecture means getting explicit about three categories: decisions that require your input, decisions that require your awareness, and decisions your team should make without you at all. Most leaders have never sorted their decisions this way, which means everything ends up in category one by default. The exercise is humbling: most decisions that land on your desk don't need to be there. They're there because you haven't given your team clear enough parameters to decide without you, or because the culture rewards checking with the boss.", timeMs: 22000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The decisions that genuinely require you are fewer than you think: resource allocation across competing priorities, decisions that set precedent across the organization, and decisions where the risk profile exceeds your team's authority level. Everything else is an opportunity for someone on your team to develop judgment. The leader who hoards decisions isn't protecting quality — they're protecting their own sense of control at the cost of their team's growth and their own cognitive resources.", timeMs: 50000 },
+    ],
+  },
+
+  {
+    id: 'l21',
+    title: "Emotional Intelligence Is Not What You Think",
+    format: 'ted-talk',
+    domain: 'Leadership',
+    description: 'Past the "be nice" misreading — what emotional intelligence actually demands of a leader.',
+    durationMins: 9,
+    isSkill: false,
+    skillLinks: ['Emotional Intelligence'],
+    chapters: [
+      { title: 'Debunking the "be nice" version', timeMs: 0 },
+      { title: 'Self-awareness vs. self-management', timeMs: 130000 },
+      { title: 'The 6-second rule', timeMs: 260000 },
+      { title: 'Naming emotions precisely', timeMs: 390000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Emotional intelligence has been so thoroughly misread by popular management culture that it now means almost the opposite of what it was intended to mean. The popular version says: be empathetic, be warm, don't say hard things. That is not emotional intelligence. Emotional intelligence is the capacity to accurately perceive, understand, and manage emotions — yours and others'. The operative word is manage, not suppress. Leaders with genuine EQ can have the hardest conversation in the room with the most precision and the least damage.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Goleman's original framework distinguishes self-awareness from self-management, and that distinction matters enormously. Self-awareness is knowing what you're feeling and why. Self-management is choosing what to do with it. Most people have some self-awareness — they know when they're frustrated, anxious, or threatened. Almost nobody has reliable self-management, which is the ability to feel that frustration or anxiety and decide how to respond rather than simply reacting. The gap between those two is where emotional intelligence actually lives.", timeMs: 20000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Neuroscientist Joseph LeDoux identified what he called the amygdala hijack — the moment your emotional brain takes over from your prefrontal cortex. His research suggests the hijack lasts approximately six seconds. That's the window. If you can pause for six seconds before responding to a provocation — a challenging email, a contentious meeting, a direct report who pushes back hard — you give your prefrontal cortex a chance to come back online. The six-second rule is not a soft skill. It's neurological hygiene.", timeMs: 48000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The most practical EQ skill is what researcher Lisa Feldman Barrett calls emotional granularity — the ability to name emotions with precision rather than defaulting to broad categories. Most people operate in a two-word vocabulary: good or bad, stressed or fine. People with more granular emotional vocabularies — who can distinguish between anxious and anticipatory, between disappointed and let down — make better decisions, recover from setbacks faster, and have stronger relationships. The words you have for your emotions shape your ability to work with them.", timeMs: 76000 },
+    ],
+  },
+
+  {
+    id: 'l22',
+    title: 'How to Give a Performance Review That Changes Something',
+    format: 'ted-talk',
+    domain: 'Management',
+    description: 'The performance review structure that actually shifts behavior — instead of just documenting it.',
+    durationMins: 7,
+    isSkill: true,
+    skillLinks: ['Performance Management'],
+    chapters: [
+      { title: 'Why most reviews change nothing', timeMs: 0 },
+      { title: 'The structure that works', timeMs: 140000 },
+      { title: 'The conversation after the review', timeMs: 280000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "The annual performance review is one of the most costly rituals in organizational life — and among the least effective. Research from Deloitte found that companies spend more than two million hours annually completing performance reviews, and the majority of managers and employees report that the reviews don't actually change anything. The structure is the problem. Most reviews are retrospective summaries — they document what happened. Documentation without forward commitment doesn't change behavior. It just creates a paper trail.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The structure that actually produces change has three parts. First: be specific about impact, not just performance — not you had a strong year but your restructuring of the onboarding process cut new hire ramp time by 40% and directly affected our Q3 pipeline. Second: name the one or two development areas with the most leverage. Third: co-create the forward plan. The review should end with the employee articulating, in their own words, what they're going to do differently and why it matters to them. If they're just nodding, nothing is changing.", timeMs: 22000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The conversation after the review matters as much as the review itself. What happens in the 30 days following determines whether the review was an event or a turning point. Schedule a check-in at 30 days specifically to revisit the commitments made in the review. Not to evaluate — to reinforce. Ask: what's been different? Where have you run into friction? What do you need from me? That follow-through is what signals to your people that this wasn't just a compliance exercise. It was a real conversation about their future.", timeMs: 48000 },
+    ],
+  },
+
+  {
+    id: 'l23',
+    title: "The Power of Admitting You Don't Know",
+    format: 'ted-talk',
+    domain: 'Leadership',
+    description: "Why intellectual humility is a leadership strength — and why certainty is often a performance, not a reality.",
+    durationMins: 6,
+    isSkill: true,
+    skillLinks: ['Intellectual Humility'],
+    chapters: [
+      { title: 'Certainty as performance', timeMs: 0 },
+      { title: 'What intellectual humility actually costs you', timeMs: 120000 },
+      { title: 'The question that changes the room', timeMs: 240000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Leadership culture has a certainty problem. We promote people who project confidence, who have answers before the questions are finished, who walk into rooms as if the outcome is already known. That certainty is often a performance, not a reality — and everyone in the room knows it. The leaders who earn the deepest trust are not the ones who are always right. They're the ones who are honest about when they're not.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Intellectual humility is not the same as indecisiveness. You can hold a position confidently and still be genuinely open to being wrong. The distinction is in your relationship to new information — do you filter it through your existing position, or do you let it challenge the position? Leaders who can't say I hadn't thought of it that way in public are leaders whose organizations stop bringing them new information. They get managed, not led. Their teams learn to present data in ways that confirm what the leader already believes.", timeMs: 20000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The three words that change the dynamic in any room: I don't know. Not performed helplessness — genuine acknowledgment. I don't know, but here's how I'm going to find out. I don't know, and I'd like to think about it more before I commit. I don't know — what do you think? That last version is the most powerful. When a leader genuinely asks for input on something they don't know, they're not showing weakness. They're modeling exactly the behavior they want from everyone in the room.", timeMs: 42000 },
+    ],
+  },
+
+  {
+    id: 'l24',
+    title: 'Cross-Functional Influence Without Authority',
+    format: 'ted-talk',
+    domain: 'Influence',
+    description: 'How to move work forward through teams you have no authority over — and build the relationships that make it possible.',
+    durationMins: 9,
+    isSkill: false,
+    skillLinks: ['Influence Without Authority'],
+    chapters: [
+      { title: 'Why authority is a crutch', timeMs: 0 },
+      { title: 'The currency of cross-functional trust', timeMs: 130000 },
+      { title: 'The ask that actually works', timeMs: 280000 },
+      { title: 'When you hit a wall', timeMs: 390000 },
+    ],
+    script: [
+      { speaker: 'narrator', speakerName: 'Coach', text: "Authority is the most fragile form of power available to a leader. It works until it doesn't — until someone above you changes priorities, until the org chart gets redrawn, until the person you're relying on formal authority over decides it's not worth complying. The leaders who get the most done in complex organizations are almost never the ones with the most formal authority. They're the ones who've built the kind of credibility and relationships that make people want to help them.", timeMs: 0 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "Cross-functional trust has a specific currency: demonstrated understanding of what the other person's job actually requires. When you approach a peer in another function and it's clear you understand their constraints, their competing priorities, and what success looks like for them — not just for you — the conversation changes entirely. You're no longer someone making a request. You're someone who gets it. That shift is worth more than any amount of positional leverage.", timeMs: 22000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "The ask that actually works in cross-functional settings is not can you help me with X. It's what would need to be true for this to be worth your team's time? That question invites them into the problem as a co-owner, not as a service provider. And it signals that you're willing to negotiate on scope, timing, and structure to make the collaboration genuinely useful for them. Most cross-functional initiatives fail because one team sees the other as a resource to be consumed, not a partner with their own constraints.", timeMs: 50000 },
+      { speaker: 'narrator', speakerName: 'Coach', text: "When you hit a wall — when a key function just won't engage — the most common mistake is escalating immediately. Escalation signals that you've given up on building the relationship, and it creates residual resentment that will outlast the immediate project. Before escalating, have a direct, candid conversation about the impasse. Tell them what you're observing. Ask what's really going on. You might learn something that changes the approach entirely. If you've done that and nothing changes, then escalate — but do it with full transparency about the path you tried first.", timeMs: 75000 },
+    ],
+  },
+
+  {
+    id: 'l25',
+    title: 'The Remote Leadership Problem Nobody Talks About',
+    format: 'podcast',
+    domain: 'Management',
+    description: 'The invisible dynamics that erode remote teams — and the intentional practices that counteract them.',
+    durationMins: 12,
+    isSkill: false,
+    skillLinks: ['Remote Leadership'],
+    hosts: [
+      { name: 'Alex', role: 'Host', gender: 'female' },
+      { name: 'Chris', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Alex', text: "Chris, we've been figuring out remote work for years now and most organizations are still getting it wrong. What's the problem nobody's actually naming?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'Chris', text: "The problem nobody names is the collapse of ambient information. In an office, you absorb a thousand signals you don't consciously notice — body language, overheard conversations, the energy in a room, who's stressed, who's checked out. Remote work eliminates all of that. Leaders are flying blind without knowing they're flying blind, because they don't know what they're not seeing. The ones who manage remote well are the ones who build intentional systems to replace that ambient signal.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What does that look like practically? You can't just schedule more meetings.", timeMs: 55000 },
+      { speaker: 'guest', speakerName: 'Chris', text: "More meetings is the wrong answer — it's trying to recreate the office virtually and it doesn't work. What works is replacing the ambient signals with intentional, low-friction check-ins. Weekly async pulses: three questions, five minutes, everyone responds in writing. What are you working on, what's blocking you, what do you need from me this week? That information flow, consistently maintained, tells you far more than a status meeting ever would.", timeMs: 67000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What about the relationship side of it? Cohesion, trust, feeling like you're actually on a team.", timeMs: 112000 },
+      { speaker: 'guest', speakerName: 'Chris', text: "Trust in remote teams is built through reliability more than relationship. In person, you build trust partly through social connection — shared meals, hallway conversations. Remote teams don't have that, and trying to manufacture it through virtual happy hours is mostly theater. What builds trust remotely is doing what you say you'll do, being responsive when someone needs you, and handling conflict directly rather than letting it fester in Slack threads.", timeMs: 124000 },
+      { speaker: 'host', speakerName: 'Alex', text: "What about equity? Some people are in office, some are remote. That hybrid problem.", timeMs: 170000 },
+      { speaker: 'guest', speakerName: 'Chris', text: "Hybrid is harder than fully remote, because the in-person people accumulate invisible advantages — more face time with senior leaders, more spontaneous collaboration, more presence in the rooms where decisions happen. Leaders in hybrid environments have to explicitly compensate for that asymmetry. If you're in person, you have a responsibility to make sure the decisions that happen in the room also happen in writing where remote people can see them. Otherwise you're building a two-tier organization by accident.", timeMs: 182000 },
+    ],
+  },
+
+  {
+    id: 'l26',
+    title: 'From Individual Contributor to Manager: The Identity Shift',
+    format: 'podcast',
+    domain: 'Career',
+    description: "The transition most organizations under-support — and what it really takes to stop being the doer and start being the developer.",
+    durationMins: 13,
+    isSkill: false,
+    skillLinks: ['New Manager'],
+    hosts: [
+      { name: 'Morgan', role: 'Host', gender: 'female' },
+      { name: 'James', role: 'Guest Coach', gender: 'male' },
+    ],
+    script: [
+      { speaker: 'host', speakerName: 'Morgan', text: "James, the jump from individual contributor to manager is one of the most common transitions in a career and one of the most poorly supported. What breaks first?", timeMs: 0 },
+      { speaker: 'guest', speakerName: 'James', text: "Identity, almost always. Your entire self-concept as a professional is built around your output — your code, your analysis, your designs, the thing you make. On Friday you're a high performer whose value is your output. On Monday you're a manager whose value is now measured through other people's output. That's a complete identity restructuring, and most organizations hand you a management book and wish you luck.", timeMs: 14000 },
+      { speaker: 'host', speakerName: 'Morgan', text: "How do new managers typically cope with that identity loss, and what goes wrong?", timeMs: 50000 },
+      { speaker: 'guest', speakerName: 'James', text: "The most common coping mechanism is staying a contributor. They keep doing the technical work because that's where they feel competent and valued. Their team is nominally managed but practically orphaned — decisions happen slowly, development doesn't happen at all. The organization promoted them to multiply impact, and instead they're doing the same job they had before, just with more email.", timeMs: 62000 },
+      { speaker: 'host', speakerName: 'Morgan', text: "So the new job is to resist the pull back to individual work. What should they be doing instead?", timeMs: 102000 },
+      { speaker: 'guest', speakerName: 'James', text: "There are three new competencies that matter most. First: talent development — your job is to make your team better, not just to get work done through them. Second: context provision — share organizational context generously; your team has access to you, which means access to information they'd otherwise never get. Third: interference removal — find every obstacle that's slowing your team down and eliminate it. Most new managers want to contribute by adding things. The most valuable thing they can do is remove things.", timeMs: 114000 },
+      { speaker: 'host', speakerName: 'Morgan', text: "What about the relational complexity? Suddenly the people who were your peers are your direct reports.", timeMs: 158000 },
+      { speaker: 'guest', speakerName: 'James', text: "That's the most awkward part of the transition and the one nobody prepares you for. The relationship genuinely has to change — you can still be warm and real with people, but the intimacy of peer friendship isn't compatible with having responsibility for their career. The things you'd vent to a peer about — the performance concerns, the organizational frustrations — those now need different containers. Being their manager means you can't also be their confidant in the way you were before.", timeMs: 170000 },
+      { speaker: 'host', speakerName: 'Morgan', text: "Any advice for someone who's been in the role for six months and realizing they've been doing it wrong?", timeMs: 212000 },
+      { speaker: 'guest', speakerName: 'James', text: "Look at your calendar for the last two weeks: how much time was individual contribution versus actual management — developing people, making decisions, clearing paths? If the split is 80-20 in favor of individual work, you know what needs to change. And have the conversation with your team: I've been doing too much of the work myself. I want to start developing you into people who can own more of this. That transparency is the beginning of the real transition.", timeMs: 224000 },
+    ],
+  },
+];
