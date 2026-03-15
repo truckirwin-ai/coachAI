@@ -1,3 +1,6 @@
+// © 2026 Foundry SMB LLC. All rights reserved.
+// CoachAI — LibraryPage
+
 
 import { useState } from 'react';
 import { lessons } from '../data/lessons';

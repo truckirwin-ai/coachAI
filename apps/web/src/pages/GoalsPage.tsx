@@ -1,3 +1,6 @@
+// © 2026 Foundry SMB LLC. All rights reserved.
+// CoachAI — GoalsPage
+
 import { useState } from 'react';
 import { useGoalsStore } from '../store/goalsStore';
 import { useToastStore } from '../store/toastStore';

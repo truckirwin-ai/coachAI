@@ -1,3 +1,6 @@
+// © 2026 Foundry SMB LLC. All rights reserved.
+// CoachAI — SessionPage
+
 import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ChatWindow } from '../components/chat/ChatWindow';

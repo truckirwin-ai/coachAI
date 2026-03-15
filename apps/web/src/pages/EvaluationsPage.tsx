@@ -1,3 +1,6 @@
+// © 2026 Foundry SMB LLC. All rights reserved.
+// CoachAI — EvaluationsPage
+
 import { useState } from 'react';
 import { assessments } from '../data/assessments';
 import type { Assessment } from '../data/assessments';

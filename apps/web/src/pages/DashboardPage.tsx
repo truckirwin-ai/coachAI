@@ -1,3 +1,6 @@
+// © 2026 Foundry SMB LLC. All rights reserved.
+// CoachAI — DashboardPage
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store/userStore';

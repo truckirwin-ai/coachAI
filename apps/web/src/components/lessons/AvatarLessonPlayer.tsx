@@ -8,7 +8,7 @@ import {
   AgentEventsEnum,
 } from '@heygen/liveavatar-web-sdk';
 import { createAvatarSession } from '../../api/liveavatar';
-import type { Lesson, LessonSegment } from '../../data/lessons';
+import type { Lesson } from '../../data/lessons';
 import type { CoachDef } from '../../data/coaches';
 
 const ACCENT_COLOR = '#17A589';
@@ -21,7 +21,7 @@ export function AvatarLessonPlayer({ lesson, coach, onClose }: {
   const [sessionState, setSessionState] = useState<SessionState>(SessionState.INACTIVE);
   const [streamReady, setStreamReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
+  const [_isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
   const [currentSegment, setCurrentSegment] = useState(0);
 
   const sessionRef = useRef<LiveAvatarSession | null>(null);
@@ -107,7 +107,7 @@ export function AvatarLessonPlayer({ lesson, coach, onClose }: {
   useEffect(() => {
     return () => {
       stopRef.current = true;
-      sessionRef.current?.close();
+      sessionRef.current?.stop();
     };
   }, []);
 

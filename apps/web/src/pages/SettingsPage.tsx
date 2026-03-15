@@ -1,3 +1,6 @@
+// © 2026 Foundry SMB LLC. All rights reserved.
+// CoachAI — SettingsPage
+
 import { useState } from 'react';
 import { useSettingsStore } from '../store/settingsStore';
 import { generateSpeech, playAudio } from '../api/elevenlabs';
