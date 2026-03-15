@@ -21,7 +21,7 @@ export async function createAvatarSession(coach: CoachDef): Promise<SessionInfo>
       'X-API-KEY': VITE_LIVEAVATAR_API_KEY,
     },
     body: JSON.stringify({
-      mode: 'CUSTOM',   // CUSTOM = no HeyGen LLM; USER_TRANSCRIPTION → our Claude pipeline
+      mode: 'FULL',     // FULL keeps voice pipeline; we interrupt() HeyGen LLM before Claude responds
       avatar_id: coach.avatarId,
       avatar_persona: { language: 'en' },
     }),

@@ -68,9 +68,10 @@ export function useAvatarSession() {
   const avatarSpeakingRef  = useRef(false);       // synchronous version for race guard
   const lastAvatarText     = useRef('');          // for word-overlap echo filter
 
-  const systemRef  = useRef<string>('You are a professional coach. Be concise and Socratic.');
-  const skillRef   = useRef<string>('Coaching');
+  const systemRef   = useRef<string>('You are a professional coach. Be concise and Socratic.');
+  const skillRef    = useRef<string>('Coaching');
   const greetingRef = useRef<string>("Hi! I'm your coach. What are you working through today?");
+  const greetingSentRef = useRef<boolean>(false); // prevents echo-suppressing the greeting
 
   // ── Mute/unmute — no state guards, always attempt ─────────────────
   const muteMic = useCallback(() => {
@@ -90,9 +91,10 @@ export function useAvatarSession() {
 
   // ── Start session (must be called from a user click for AudioContext) ──
   const startSession = useCallback(async (coach: CoachDef, topic?: string) => {
-    greetingRef.current  = buildGreeting(coach, topic);
-    systemRef.current    = coach.systemPrompt;
-    skillRef.current     = coach.specialty;
+    greetingRef.current   = buildGreeting(coach, topic);
+    systemRef.current     = coach.systemPrompt;
+    skillRef.current      = coach.specialty;
+    greetingSentRef.current = false;
 
     async function init() {
       try {
@@ -102,7 +104,16 @@ export function useAvatarSession() {
         sessionRef.current = session;
 
         // ── Lifecycle ────────────────────────────────────────────────
-        session.on(SessionEvent.SESSION_STATE_CHANGED, (s: SessionState) => setSessionState(s));
+        session.on(SessionEvent.SESSION_STATE_CHANGED, (s: SessionState) => {
+          setSessionState(s);
+          // Send greeting exactly once when session reaches CONNECTED state
+          if (s === SessionState.CONNECTED && !greetingSentRef.current) {
+            greetingSentRef.current = true;
+            lastAvatarText.current = greetingRef.current;
+            historyRef.current = [{ role: 'assistant', content: greetingRef.current }];
+            setTimeout(() => session.message(greetingRef.current), 400);
+          }
+        });
 
         session.on(SessionEvent.SESSION_DISCONNECTED, (reason: SessionDisconnectReason) => {
           setError(`Session disconnected: ${reason}`);
@@ -119,9 +130,10 @@ export function useAvatarSession() {
             videoElRef.current.play().catch(() => {});
           }
 
-          // Start mic muted — Layer 2 (AEC warm-up)
+          // Start mic first — greeting fires after voiceChat is confirmed ready
           try {
             await session.voiceChat.start({ defaultMuted: true });
+            scheduleUnmute(AEC_WARMUP_MS);
           } catch (e: any) {
             const msg = e?.message ?? String(e);
             setMicError(
@@ -129,17 +141,9 @@ export function useAvatarSession() {
                 ? 'Mic blocked — allow microphone access in browser settings'
                 : `Mic error: ${msg}`
             );
-            return;
           }
 
-          // Send greeting first, then unmute after AEC warms up
-          setTimeout(() => {
-            lastAvatarText.current = greetingRef.current;
-            historyRef.current = [{ role: 'assistant', content: greetingRef.current }];
-            session.message(greetingRef.current);
-          }, 600);
-
-          scheduleUnmute(AEC_WARMUP_MS);
+          // Greeting is sent from SESSION_STATE_CHANGED → CONNECTED (deterministic)
         });
 
         // ── Layer 1: Mute during avatar speech ───────────────────────
@@ -165,9 +169,13 @@ export function useAvatarSession() {
           const text = event?.text?.trim();
           if (!text || processingRef.current) return;
 
+          // Kill HeyGen's built-in LLM response before it speaks — we'll use Claude instead
+          try { session.interrupt(); } catch {}
+
           // Drop transcript if it's likely the avatar's own echo
+          // Exception: never suppress during greeting window (first 8s after session starts)
           const words = text.split(/\s+/).filter(Boolean);
-          if (words.length > ECHO_MIN_WORDS) {
+          if (greetingSentRef.current && words.length > ECHO_MIN_WORDS) {
             const overlap = wordOverlap(text, lastAvatarText.current);
             if (overlap >= ECHO_OVERLAP_THRESHOLD) {
               console.log(`[Coach] Echo suppressed (${Math.round(overlap * 100)}% overlap): "${text}"`);
