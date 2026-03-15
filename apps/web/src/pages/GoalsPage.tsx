@@ -50,7 +50,7 @@ export function GoalsPage() {
         }
       />
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '24px 28px' }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
       {/* Add Goal Form */}
       {showAddForm && (
         <div className="card" style={{ marginBottom: 20, borderColor: 'var(--accent)' }}>

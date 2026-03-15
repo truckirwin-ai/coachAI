@@ -29,15 +29,9 @@ export async function sendCoachMessage(
   skillName: string,
   sessionType: string,
   onToken: (token: string) => void,
-  style: 'socratic' | 'directive' | 'balanced' = 'balanced'
+  systemOverride?: string
 ): Promise<string> {
-  const styleGuide = {
-    socratic: 'Ask powerful questions rather than giving answers. Guide through discovery. Rarely give direct advice — instead ask "What do you think?" and "What have you tried?"',
-    directive: 'Be direct and prescriptive. Give clear frameworks, models, and specific actionable advice. Less questioning, more guidance.',
-    balanced: 'Mix powerful questions with direct insight. Ask questions to uncover context, then give clear guidance when appropriate.',
-  }[style];
-
-  const systemPrompt = `${COACH_SYSTEM_PROMPT}\n\nCoaching style: ${styleGuide}\n\nCurrent skill: ${skillName}\nSession type: ${sessionType}`;
+  const systemPrompt = systemOverride || `${COACH_SYSTEM_PROMPT}\n\nCurrent skill: ${skillName}\nSession type: ${sessionType}`;
 
   let fullResponse = '';
 

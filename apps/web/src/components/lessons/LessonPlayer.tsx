@@ -8,6 +8,7 @@ const domainColors: Record<string, string> = {
   Career: '#8E44AD',
   Management: '#E67E22',
   Strategy: '#2980B9',
+  Influence: '#C0392B',
 };
 
 function getInitials(name: string) {
@@ -18,18 +19,15 @@ const avatarColors = ['#17A589', '#8E44AD', '#E67E22', '#2980B9', '#C0392B'];
 
 function getVoiceId(segment: LessonSegment, lessonId: string): string {
   if (segment.speaker === 'narrator') {
-    // Different voice per TED talk
-    if (lessonId === 'l2') return VOICE_IDS.narrator_ted2; // Matilda for Radical Candor
-    if (lessonId === 'l5') return VOICE_IDS.narrator_ted3; // Eric for Executive Presence
-    return VOICE_IDS.narrator; // Jessica for others
+    if (lessonId === 'l2') return VOICE_IDS.narrator_ted2;
+    if (lessonId === 'l5') return VOICE_IDS.narrator_ted3;
+    return VOICE_IDS.narrator;
   }
   if (segment.speaker === 'host') {
-    // Different host voice per podcast
-    if (lessonId === 'l4') return VOICE_IDS.Alex_sarah; // Sarah for Delegation podcast
-    if (lessonId === 'l6') return VOICE_IDS.Alex_liam;  // Liam for Strategy podcast
-    return VOICE_IDS.Alex_bella; // Bella for Managing Up podcast
+    if (lessonId === 'l4') return VOICE_IDS.Alex_sarah;
+    if (lessonId === 'l6') return VOICE_IDS.Alex_liam;
+    return VOICE_IDS.Alex_bella;
   }
-  // Guest voices by name
   return VOICE_IDS[segment.speakerName] || VOICE_IDS.Jordan;
 }
 
@@ -56,22 +54,40 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   };
 
-  // Scroll current segment into view
+  const isTedTalk = lesson.format === 'ted-talk';
+  const domainColor = domainColors[lesson.domain] || '#1B3A5C';
+
+  // Stop everything on unmount
+  useEffect(() => {
+    return () => {
+      stopRequestedRef.current = true;
+      stopCurrentAudio();
+    };
+  }, []);
+
+  const handleClose = () => {
+    stopRequestedRef.current = true;
+    stopCurrentAudio();
+    setIsPlaying(false);
+    setIsPaused(false);
+    onClose();
+  };
+
+  // Auto-scroll transcript to active segment
   useEffect(() => {
     const el = segmentRefs.current[currentSegment];
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (el && transcriptRef.current) {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
   }, [currentSegment]);
 
-  // Prefetch next segment audio
+  // ── Prefetch next segment while current plays ─────────────────────────────
   const prefetchNext = useCallback((idx: number) => {
-    const nextIdx = idx + 1;
-    if (nextIdx < lesson.script.length) {
-      const seg = lesson.script[nextIdx];
-      const voiceId = getVoiceId(seg, lesson.id);
-      generateSpeech(seg.text, voiceId).catch(() => {/* silent prefetch failure */});
-    }
-  }, [lesson.script]);
+    const next = lesson.script[idx + 1];
+    if (next) generateSpeech(next.text, getVoiceId(next, lesson.id)).catch(() => {});
+  }, [lesson.script, lesson.id]);
 
+  // ── Unified playback loop (ElevenLabs for both formats) ───────────────────
   const playFrom = useCallback(async (startIdx: number) => {
     stopRequestedRef.current = false;
     pauseRequestedRef.current = false;
@@ -91,62 +107,45 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
       try {
         audioUrl = await generateSpeech(seg.text, voiceId);
       } catch (e) {
-        console.error('ElevenLabs generateSpeech failed:', e);
+        console.error('TTS failed for segment', idx, e);
         setIsGenerating(false);
         break;
       }
 
       if (stopRequestedRef.current) break;
       setIsGenerating(false);
-
-      // Prefetch next while this one plays
       prefetchNext(idx);
 
       try {
         await playAudio(audioUrl);
       } catch {
-        // audio error — skip segment
+        // skip on audio error
       }
 
-      if (stopRequestedRef.current) break;
-      if (pauseRequestedRef.current) {
-        // Will not advance — pause was called mid-playback; handled by pauseCurrentAudio
-        break;
-      }
-
+      if (stopRequestedRef.current || pauseRequestedRef.current) break;
       idx++;
     }
 
     if (!pauseRequestedRef.current) {
       setIsPlaying(false);
       setIsGenerating(false);
-      if (!stopRequestedRef.current) {
-        // Reached end naturally
-        setCurrentSegment(0);
-      }
+      if (!stopRequestedRef.current) setCurrentSegment(0);
     }
-  }, [lesson.script, prefetchNext]);
+  }, [lesson.script, lesson.id, prefetchNext]);
 
+  // ── Controls ──────────────────────────────────────────────────────────────
   const handlePlay = () => {
     if (isPlaying && !isPaused) {
-      // Pause
       pauseRequestedRef.current = true;
       pauseCurrentAudio();
       setIsPaused(true);
       setIsPlaying(false);
     } else if (isPaused) {
-      // Resume
       pauseRequestedRef.current = false;
       resumeCurrentAudio();
       setIsPaused(false);
       setIsPlaying(true);
-      // Note: if paused mid-segment, resume continues audio; but if paused between segments
-      // we need to restart from current. We handle by re-invoking playFrom.
-      // Since pauseCurrentAudio pauses the HTMLAudioElement, resumeCurrentAudio resumes it.
-      // The playFrom loop already awaits playAudio which will resolve when the audio ends.
-      // However playFrom may have already broken out of the loop. We re-invoke if needed.
     } else {
-      // Start fresh
       stopCurrentAudio();
       playFrom(currentSegment);
     }
@@ -160,9 +159,7 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
     setIsPaused(false);
     const newIdx = Math.max(0, currentSegment - 1);
     setCurrentSegment(newIdx);
-    if (wasPlaying) {
-      setTimeout(() => playFrom(newIdx), 50);
-    }
+    if (wasPlaying) setTimeout(() => playFrom(newIdx), 50);
   };
 
   const handleSkipForward = () => {
@@ -173,9 +170,7 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
     setIsPaused(false);
     const newIdx = Math.min(lesson.script.length - 1, currentSegment + 1);
     setCurrentSegment(newIdx);
-    if (wasPlaying) {
-      setTimeout(() => playFrom(newIdx), 50);
-    }
+    if (wasPlaying) setTimeout(() => playFrom(newIdx), 50);
   };
 
   const handleChapterClick = (chapterTimeMs: number) => {
@@ -187,9 +182,7 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
     setIsPlaying(false);
     setIsPaused(false);
     setCurrentSegment(targetIdx);
-    if (wasPlaying) {
-      setTimeout(() => playFrom(targetIdx), 50);
-    }
+    if (wasPlaying) setTimeout(() => playFrom(targetIdx), 50);
   };
 
   const handleSegmentClick = (i: number) => {
@@ -199,21 +192,15 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
     setIsPlaying(false);
     setIsPaused(false);
     setCurrentSegment(i);
-    if (wasPlaying) {
-      setTimeout(() => playFrom(i), 50);
-    }
+    if (wasPlaying) setTimeout(() => playFrom(i), 50);
   };
-
-  const domainColor = domainColors[lesson.domain] || '#1B3A5C';
 
   // Current chapter for TED talks
   const currentChapter = lesson.chapters
     ? [...lesson.chapters].reverse().find(c => c.timeMs <= currentMs)
     : null;
 
-  const isTedTalk = lesson.format === 'ted-talk';
-
-  const playButtonIcon = isPlaying ? '⏸' : '▶';
+  const activeSeg = lesson.script[currentSegment];
 
   return (
     <div style={{
@@ -221,7 +208,7 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
       background: 'rgba(0,0,0,0.7)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 2000,
-    }} onClick={onClose}>
+    }} onClick={handleClose}>
       <div style={{
         background: 'white', borderRadius: 16,
         width: '100%', maxWidth: 680,
@@ -237,8 +224,9 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
           borderBottom: '1px solid #eee',
           display: 'flex', alignItems: 'center', gap: 12,
           background: isTedTalk ? '#fafafa' : '#faf8ff',
+          flexShrink: 0,
         }}>
-          <button onClick={onClose} style={{
+          <button onClick={handleClose} style={{
             background: 'none', border: 'none', fontSize: 20,
             cursor: 'pointer', color: '#666', lineHeight: 1, padding: 0,
           }}>✕</button>
@@ -246,48 +234,95 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
             <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {lesson.title}
             </div>
-            <div style={{ fontSize: 11, color: '#999', marginTop: 1 }}>
+            <div style={{ fontSize: 11, color: '#999', marginTop: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
               {isTedTalk ? '🎤 TED Talk' : '🎙 Podcast'} · {lesson.durationMins} min
-              {isGenerating && <span style={{ marginLeft: 8, color: '#17A589' }}>✦ Generating...</span>}
+              {isGenerating && (
+                <span style={{ color: '#17A589', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#17A589', animation: 'pulse 1s infinite' }} />
+                  Generating…
+                </span>
+              )}
             </div>
           </div>
           <span style={{
             background: domainColor, color: 'white',
-            fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+            fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20, flexShrink: 0,
           }}>{lesson.domain}</span>
         </div>
 
         {/* Body */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+
           {isTedTalk ? (
-            /* TED TALK LAYOUT */
-            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '20px 24px 0' }}>
-              {/* Avatar */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-                <div style={{
-                  width: 80, height: 80, borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${domainColor}, ${domainColor}cc)`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 32, color: 'white', fontWeight: 700,
-                  boxShadow: isPlaying ? `0 0 0 6px ${domainColor}33` : 'none',
-                  transition: 'box-shadow 0.3s',
-                }}>🎯</div>
-              </div>
+            /* ── TED TALK LAYOUT ─────────────────────────────────────────── */
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '16px 24px 0' }}>
 
-              {/* Current segment text */}
+              {/* Now Playing card */}
               <div style={{
-                background: '#f8f9fa', borderRadius: 10, padding: '16px 18px',
-                marginBottom: 16, minHeight: 80, maxHeight: 120, overflow: 'hidden',
+                background: isPlaying ? '#e8f8f5' : '#f4f4f4',
+                border: `1.5px solid ${isPlaying ? '#17A589' : '#e0e0e0'}`,
+                borderRadius: 12,
+                padding: '14px 18px',
+                marginBottom: 14,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 14,
+                transition: 'all 0.3s',
+                flexShrink: 0,
               }}>
-                <p style={{ fontSize: 14, lineHeight: 1.6, color: '#333', margin: 0, fontStyle: 'italic' }}>
-                  "{lesson.script[currentSegment]?.text}"
-                </p>
+                {/* Speaker avatar */}
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                  background: domainColor,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 700, fontSize: 15,
+                  boxShadow: isPlaying ? `0 0 0 3px ${domainColor}44` : 'none',
+                  transition: 'box-shadow 0.3s',
+                }}>
+                  {activeSeg?.speakerName ? getInitials(activeSeg.speakerName) : '▶'}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: domainColor, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>
+                    {currentChapter?.title || activeSeg?.speakerName || 'Introduction'}
+                  </div>
+                  <p style={{ fontSize: 13.5, lineHeight: 1.6, color: '#333', margin: 0, fontStyle: 'italic' }}>
+                    "{activeSeg?.text.slice(0, 180)}{(activeSeg?.text.length ?? 0) > 180 ? '…' : ''}"
+                  </p>
+                </div>
               </div>
 
-              {/* Transcript scroll */}
+              {/* Chapters */}
+              {lesson.chapters && (
+                <div style={{ marginBottom: 12, flexShrink: 0 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.9px', marginBottom: 6 }}>Chapters</div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {lesson.chapters.map((ch, i) => {
+                      const isCurrent = currentChapter?.title === ch.title;
+                      const isPast = currentMs > ch.timeMs;
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => handleChapterClick(ch.timeMs)}
+                          style={{
+                            fontSize: 11, padding: '4px 10px', borderRadius: 20,
+                            border: `1px solid ${isCurrent ? domainColor : '#ddd'}`,
+                            background: isCurrent ? domainColor : 'white',
+                            color: isCurrent ? 'white' : isPast ? '#555' : '#aaa',
+                            cursor: 'pointer', fontWeight: isCurrent ? 600 : 400,
+                            transition: 'all 0.15s',
+                          }}
+                        >{ch.title}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Transcript */}
               <div ref={transcriptRef} style={{
-                flex: 1, overflowY: 'auto', marginBottom: 8,
+                flex: 1, overflowY: 'auto',
                 border: '1px solid #eee', borderRadius: 8,
+                marginBottom: 8,
               }}>
                 {lesson.script.map((seg, i) => (
                   <div
@@ -297,56 +332,25 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
                     style={{
                       padding: '10px 14px',
                       background: i === currentSegment ? '#e8f8f5' : 'transparent',
-                      borderLeft: i === currentSegment ? '3px solid #17A589' : '3px solid transparent',
+                      borderLeft: `3px solid ${i === currentSegment ? '#17A589' : 'transparent'}`,
                       cursor: 'pointer',
                       borderBottom: '1px solid #f0f0f0',
-                      fontSize: 13, color: i === currentSegment ? '#0d6e5a' : '#555',
+                      fontSize: 13,
+                      color: i === currentSegment ? '#0d6e5a' : '#555',
                       transition: 'all 0.15s',
                     }}
                   >
-                    <span style={{ fontSize: 10, color: '#999', marginRight: 8 }}>{formatTime(seg.timeMs)}</span>
+                    <span style={{ fontSize: 10, color: '#bbb', marginRight: 8 }}>{formatTime(seg.timeMs)}</span>
                     {seg.text.slice(0, 100)}{seg.text.length > 100 ? '…' : ''}
                   </div>
                 ))}
               </div>
-
-              {/* Chapters */}
-              {lesson.chapters && (
-                <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#999', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 6 }}>Chapters</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {lesson.chapters.map((ch, i) => {
-                      const isCurrent = currentChapter?.title === ch.title;
-                      const isPast = currentMs > ch.timeMs;
-                      return (
-                        <div
-                          key={i}
-                          onClick={() => handleChapterClick(ch.timeMs)}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: 8,
-                            padding: '4px 6px', borderRadius: 6, cursor: 'pointer',
-                            background: isCurrent ? '#e8f8f5' : 'transparent',
-                          }}
-                        >
-                          <span style={{ fontSize: 12, width: 16, textAlign: 'center', color: isCurrent ? '#17A589' : isPast ? '#17A589' : '#ccc' }}>
-                            {isCurrent ? '●' : isPast ? '✓' : '○'}
-                          </span>
-                          <span style={{ fontSize: 12, color: isCurrent ? '#0d6e5a' : isPast ? '#555' : '#999', fontWeight: isCurrent ? 600 : 400 }}>
-                            {ch.title}
-                          </span>
-                          <span style={{ fontSize: 10, color: '#ccc', marginLeft: 'auto' }}>{formatTime(ch.timeMs)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
           ) : (
-            /* PODCAST LAYOUT */
+            /* ── PODCAST LAYOUT ──────────────────────────────────────────── */
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '16px 24px 0' }}>
               {/* Hosts */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 40, marginBottom: 16, flexShrink: 0 }}>
                 {(lesson.hosts || []).map((host, i) => (
                   <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                     <div style={{
@@ -354,7 +358,7 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
                       background: avatarColors[i % avatarColors.length],
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: 'white', fontWeight: 700, fontSize: 18,
-                      boxShadow: lesson.script[currentSegment]?.speakerName === host.name && isPlaying
+                      boxShadow: activeSeg?.speakerName === host.name && isPlaying
                         ? `0 0 0 4px ${avatarColors[i % avatarColors.length]}55`
                         : 'none',
                       transition: 'box-shadow 0.3s',
@@ -366,10 +370,7 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
               </div>
 
               {/* Transcript */}
-              <div ref={transcriptRef} style={{
-                flex: 1, overflowY: 'auto', marginBottom: 8,
-                padding: '0 4px',
-              }}>
+              <div ref={transcriptRef} style={{ flex: 1, overflowY: 'auto', padding: '0 4px' }}>
                 {lesson.script.map((seg, i) => {
                   const isHost = seg.speaker === 'host';
                   const isCurrent = i === currentSegment;
@@ -381,20 +382,19 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
                       ref={el => { segmentRefs.current[i] = el; }}
                       onClick={() => handleSegmentClick(i)}
                       style={{
-                        display: 'flex',
-                        flexDirection: 'column',
+                        display: 'flex', flexDirection: 'column',
                         alignItems: isHost ? 'flex-start' : 'flex-end',
                         marginBottom: 12, cursor: 'pointer',
                       }}
                     >
-                      <div style={{ fontSize: 10, fontWeight: 700, color: color, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
                         {seg.speakerName}
                       </div>
                       <div style={{
                         maxWidth: '75%', padding: '10px 14px',
                         background: isCurrent ? (isHost ? '#e8f8f5' : '#f0ebff') : '#f5f5f5',
                         borderRadius: isHost ? '4px 14px 14px 14px' : '14px 4px 14px 14px',
-                        border: isCurrent ? `2px solid ${color}` : '2px solid transparent',
+                        border: `2px solid ${isCurrent ? color : 'transparent'}`,
                         fontSize: 13, color: '#333', lineHeight: 1.5,
                         transition: 'all 0.15s',
                       }}>
@@ -414,12 +414,11 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
           padding: '14px 24px 18px',
           borderTop: '1px solid #eee',
           background: '#fafafa',
+          flexShrink: 0,
         }}>
           {/* Progress bar */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{
-              height: 4, background: '#e8e8e8', borderRadius: 4, overflow: 'hidden', marginBottom: 4,
-            }}>
+            <div style={{ height: 4, background: '#e8e8e8', borderRadius: 4, overflow: 'hidden', marginBottom: 4 }}>
               <div style={{
                 height: '100%', width: `${progress}%`,
                 background: '#17A589', borderRadius: 4, transition: 'width 0.3s',
@@ -432,32 +431,46 @@ export function LessonPlayer({ lesson, onClose }: LessonPlayerProps) {
           </div>
 
           {/* Playback buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 10 }}>
             <button onClick={handleSkipBack} style={{
               background: '#f0f0f0', border: 'none', borderRadius: '50%',
               width: 36, height: 36, cursor: 'pointer', fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>◀</button>
-            <button onClick={handlePlay} disabled={isGenerating && !isPlaying} style={{
-              background: '#17A589', border: 'none', borderRadius: '50%',
-              width: 52, height: 52, cursor: 'pointer', fontSize: 22, color: 'white',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(23,165,137,0.4)',
-              opacity: isGenerating && !isPlaying ? 0.7 : 1,
-            }}>{playButtonIcon}</button>
+            <button
+              onClick={handlePlay}
+              disabled={isGenerating && !isPlaying}
+              style={{
+                background: '#17A589', border: 'none', borderRadius: '50%',
+                width: 52, height: 52, cursor: isGenerating && !isPlaying ? 'not-allowed' : 'pointer',
+                fontSize: 22, color: 'white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(23,165,137,0.4)',
+                opacity: isGenerating && !isPlaying ? 0.65 : 1,
+                transition: 'opacity 0.2s',
+              }}
+            >
+              {isGenerating && !isPlaying ? '…' : isPlaying ? '⏸' : '▶'}
+            </button>
             <button onClick={handleSkipForward} style={{
               background: '#f0f0f0', border: 'none', borderRadius: '50%',
               width: 36, height: 36, cursor: 'pointer', fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>▶</button>
+            }}>▶▶</button>
           </div>
 
-          {/* Speed — informational only; ElevenLabs doesn't support rate control here */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-            <span style={{ fontSize: 11, color: '#bbb' }}>ElevenLabs AI Voices</span>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: 10, color: '#ccc', letterSpacing: '0.05em' }}>ElevenLabs AI Voices</span>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+      `}</style>
     </div>
   );
 }

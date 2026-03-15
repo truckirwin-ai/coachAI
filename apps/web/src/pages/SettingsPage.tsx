@@ -131,7 +131,7 @@ export default function SettingsPage() {
         }
       />
 
-      <div style={{ padding: '24px 28px', maxWidth: 720 }}>
+      <div style={{ padding: '16px 20px', maxWidth: 720 }}>
       {/* Section 1: Coach Voice */}
       <div style={{ marginBottom: 28 }}>
         <p className="section-label">Coach Voice</p>

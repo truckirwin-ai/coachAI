@@ -5,9 +5,9 @@ function CoachMsg({ msg }: { msg: Message }) {
   return (
     <div style={{ display: 'flex', gap: 10, alignSelf: 'flex-start', maxWidth: '78%', animation: 'fadeIn .2s ease' }}>
       <div style={{
-        width: 30, height: 30, borderRadius: '50%', background: 'var(--accent)',
+        width: 30, height: 30, borderRadius: '50%', background: '#111',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 14, flexShrink: 0, marginTop: 4,
+        fontSize: 10, fontWeight: 700, color: 'white', flexShrink: 0, marginTop: 4,
       }}>CA</div>
       <div>
         <div style={{
@@ -39,8 +39,9 @@ function ThinkingDots() {
   return (
     <div style={{ display: 'flex', gap: 10, alignSelf: 'flex-start', animation: 'fadeIn .2s ease' }}>
       <div style={{
-        width: 30, height: 30, borderRadius: '50%', background: 'var(--accent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0,
+        width: 30, height: 30, borderRadius: '50%', background: '#111',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 10, fontWeight: 700, color: 'white', flexShrink: 0,
       }}>CA</div>
       <div style={{
         background: 'var(--white)', border: '1px solid var(--border)',
@@ -72,7 +73,11 @@ export function ChatWindow({ messages, isThinking }: { messages: Message[]; isTh
     }}>
       {messages.length === 0 && (
         <div style={{ margin: 'auto', textAlign: 'center', color: 'var(--text-3)', padding: 40 }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>CA</div>
+          <div style={{
+          width: 52, height: 52, borderRadius: '50%', background: '#111',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'white', fontSize: 16, fontWeight: 700, margin: '0 auto 12px',
+        }}>CA</div>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-2)', marginBottom: 6 }}>Ready when you are</div>
           <div style={{ fontSize: 13 }}>Type a message or start speaking to begin your session.</div>
         </div>

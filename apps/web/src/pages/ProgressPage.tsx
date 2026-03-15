@@ -76,7 +76,7 @@ export function ProgressPage() {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
       {/* LEFT PANEL */}
-      <div style={{ width: 340, minWidth: 340, padding: 20, overflowY: 'auto', borderRight: '1px solid #E5E7EB', background: '#fff' }}>
+      <div style={{ width: 340, minWidth: 340, padding: 14, overflowY: 'auto', borderRight: '1px solid #E5E7EB', background: '#fff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
             <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 3 }}>Leadership Track · 4 of 8 complete</div>
@@ -167,7 +167,7 @@ export function ProgressPage() {
       </div>
 
       {/* CENTER PANEL */}
-      <div style={{ flex: 1, padding: 20, overflowY: 'auto', borderLeft: '1px solid #E5E7EB', background: '#fff' }}>
+      <div style={{ flex: 1, padding: 14, overflowY: 'auto', borderLeft: '1px solid #E5E7EB', background: '#fff' }}>
         {evalDetail ? (
           <>
             <div style={{ marginBottom: 16 }}>
@@ -264,7 +264,7 @@ export function ProgressPage() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div style={{ width: 200, minWidth: 200, padding: '16px 14px', borderLeft: '1px solid #E5E7EB', background: '#FAFBFC', overflowY: 'auto' }}>
+      <div style={{ width: 200, minWidth: 200, padding: '12px 10px', borderLeft: '1px solid #E5E7EB', background: '#FAFBFC', overflowY: 'auto' }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text)', marginBottom: 12 }}>🎯 Active Goals</div>
         {mockGoals.map((g, i) => (
           <div key={i} style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, padding: 12, marginBottom: 10 }}>

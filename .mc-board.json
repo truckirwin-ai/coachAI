@@ -1,0 +1,119 @@
+{
+  "title": "COACH",
+  "sub": "/Users/truckirwin/Desktop/Foundry SMB/Products/COACH",
+  "inbox": [
+    {
+      "id": "1773343145374pjkn8kbje1",
+      "t": "Set up core AWS infra (VPC, EKS, Aurora, S3, Cognito) using AWS CDK as defined in spec",
+      "p": "high",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374h1rfyyx3ire",
+      "t": "Scaffold Nx monorepo: apps (ios, desktop), services (ai-orchestration, user, curriculum), and shared packages",
+      "p": "high",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374ocwbm9zzkog",
+      "t": "Build Auth & User services on EKS with Cognito for sign-up, login, and JWT management",
+      "p": "high",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374tlen5q7s93l",
+      "t": "Define curriculum data models and load content for the first 10 foundational coaching skills",
+      "p": "high",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374v94l5wz2tok",
+      "t": "Build AI Orchestration service (text-only MVP) for context assembly and Anthropic Claude API integration",
+      "p": "high",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374xhdkeqqultm",
+      "t": "Develop iOS app (SwiftUI) with user auth and a functional text-based coaching chat interface",
+      "p": "med",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374t5vp358wm5n",
+      "t": "Develop macOS desktop app (Electron) reusing web components for UI, connecting to auth and AI services",
+      "p": "med",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374hyefzisjxem",
+      "t": "Integrate Stripe Checkout for 'Starter' tier subscription and build webhooks for tenant provisioning",
+      "p": "med",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    },
+    {
+      "id": "1773343145374btwospcfx7j",
+      "t": "Explore live AI chat avatar (Synthesia, Hey Gen)",
+      "p": "high",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inbox"
+    }
+  ],
+  "inprog": [
+    {
+      "id": "177334314537406f44ehhl3w8",
+      "t": "Add AI Avatar for recorded sessions (Synthesia)",
+      "p": "high",
+      "who": "Fang",
+      "wc": "#1a2744",
+      "tags": "",
+      "col": "inprog"
+    }
+  ],
+  "review": [],
+  "done": [],
+  "_meta": {
+    "boardId": "dir-cf72c5e23d10cedd",
+    "detectedType": "fullstack",
+    "detectedName": "Full-Stack App",
+    "detectedIcon": "🔧",
+    "dirName": "COACH",
+    "cols": [
+      "Backlog",
+      "In Progress",
+      "Review",
+      "Shipped"
+    ],
+    "colIds": [
+      "inbox",
+      "inprog",
+      "review",
+      "done"
+    ]
+  }
+}

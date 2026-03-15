@@ -62,7 +62,7 @@ export function MessageInput({ voiceTranscript }: MessageInputProps) {
           rows={1}
           style={{
             flex: 1, resize: 'none', overflow: 'hidden',
-            background: 'var(--white)', border: '1.5px solid var(--border)',
+            background: 'white', border: '1.5px solid var(--border)',
             borderRadius: 10, padding: '9px 14px',
             fontSize: 14, color: 'var(--text)', lineHeight: 1.5,
             fontFamily: 'inherit', outline: 'none',
@@ -71,7 +71,7 @@ export function MessageInput({ voiceTranscript }: MessageInputProps) {
         />
         <button onClick={send} disabled={!text.trim() || isThinking} style={{
           width: 38, height: 38, borderRadius: '50%',
-          background: text.trim() && !isThinking ? 'var(--accent)' : 'var(--border)',
+          background: text.trim() && !isThinking ? '#111' : 'var(--border)',
           border: 'none', color: 'white', fontSize: 16, cursor: text.trim() && !isThinking ? 'pointer' : 'default',
           flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'background .15s',

@@ -3,30 +3,42 @@ function getElevenLabsKey(): string {
   return stored.elevenLabsApiKey || import.meta.env.VITE_ELEVENLABS_API_KEY || '';
 }
 
-// Voice ID map
+// Voice ID map — mature voices, 45–65 yrs, guiding / mentoring / humble tone
+// George  JBFqnCBsd6RMkjVDRZzb — warm captivating storyteller, middle-aged male
+// Bill    pqHfZKP75CvOlQylNhV4 — wise, mature, balanced, older male
+// Daniel  onwK4e9ZLuTAKqWW03F9 — steady broadcaster, middle-aged male
+// Alice   Xb7hH8MSUJpSbSDYk0k2 — clear engaging educator, middle-aged female
+// Matilda XrExE9yKIg1WjnnlVkGX — knowledgeable professional, middle-aged female
+// Bella   hpp4J3VqNfWAUOO0d1Us — professional warm, middle-aged female
+// Eric    cjVigY5qzO86Huf0OWal — smooth trustworthy, middle-aged male
+// Brian   nPczCjzI2devNBz1zQrb — deep resonant comforting, middle-aged male
+// River   SAz9YHcvj6GT2YYXdXww — relaxed neutral informative, middle-aged neutral
+// Lily    pFZP5JQG7iQjIQuC4Bku — velvety storyteller, middle-aged female
+// Chris   iP95p4xoKVk53GoZ742B — charming down-to-earth, middle-aged male
+// Roger   CwhRBWXzGAHq8TQ4Fs17 — laid-back resonant, middle-aged male
 export const VOICE_IDS: Record<string, string> = {
-  narrator: 'cgSgspJ2msm6clMCkdW9',
-  narrator_ted2: 'XrExE9yKIg1WjnnlVkGX',
-  narrator_ted3: 'cjVigY5qzO86Huf0OWal',
-  Alex_bella: 'hpp4J3VqNfWAUOO0d1Us',
-  Jordan: 'bIHbv24MWmeRgasZH58o',
-  Alex_sarah: 'EXAVITQu4vr4xnSDxMaL',
-  Sam: 'iP95p4xoKVk53GoZ742B',
-  Alex_liam: 'TX3LPaxmHKxFdv7VOQHJ',
-  Morgan: 'FGY2WhTYpPnrIDTdsKH5',
-  Casey: 'bIHbv24MWmeRgasZH58o',
-  Dana: 'hpp4J3VqNfWAUOO0d1Us',
-  Marcus: 'cjVigY5qzO86Huf0OWal',
-  Reed: 'nPczCjzI2devNBz1zQrb',
-  Jordan_host: 'TX3LPaxmHKxFdv7VOQHJ',
-  Priya: 'XrExE9yKIg1WjnnlVkGX',
-  Tyler: 'iP95p4xoKVk53GoZ742B',
-  Devon: 'CwhRBWXzGAHq8TQ4Fs17',
-  Sam_host: 'cgSgspJ2msm6clMCkdW9',
-  James: 'cjVigY5qzO86Huf0OWal',
-  Laura: 'FGY2WhTYpPnrIDTdsKH5',
-  coach: 'cgSgspJ2msm6clMCkdW9',
-  host: 'hpp4J3VqNfWAUOO0d1Us',
+  narrator:      'JBFqnCBsd6RMkjVDRZzb', // George  — warm, captivating, middle-aged male
+  narrator_ted2: 'XrExE9yKIg1WjnnlVkGX', // Matilda — knowledgeable, middle-aged female
+  narrator_ted3: 'pqHfZKP75CvOlQylNhV4', // Bill    — wise, mature, older male
+  Alex_bella:    'hpp4J3VqNfWAUOO0d1Us', // Bella   — professional warm, middle-aged female
+  Jordan:        'onwK4e9ZLuTAKqWW03F9', // Daniel  — steady, middle-aged male
+  Alex_sarah:    'Xb7hH8MSUJpSbSDYk0k2', // Alice   — educator, middle-aged female
+  Sam:           'iP95p4xoKVk53GoZ742B', // Chris   — charming, middle-aged male
+  Alex_liam:     'SAz9YHcvj6GT2YYXdXww', // River   — relaxed neutral, middle-aged
+  Morgan:        'pFZP5JQG7iQjIQuC4Bku', // Lily    — velvety storyteller, middle-aged female
+  Casey:         'nPczCjzI2devNBz1zQrb', // Brian   — comforting, middle-aged male
+  Dana:          'hpp4J3VqNfWAUOO0d1Us', // Bella   — warm, middle-aged female
+  Marcus:        'cjVigY5qzO86Huf0OWal', // Eric    — smooth trustworthy, middle-aged male
+  Reed:          'nPczCjzI2devNBz1zQrb', // Brian   — deep resonant, middle-aged male
+  Jordan_host:   'onwK4e9ZLuTAKqWW03F9', // Daniel  — steady broadcaster
+  Priya:         'XrExE9yKIg1WjnnlVkGX', // Matilda — professional, middle-aged female
+  Tyler:         'iP95p4xoKVk53GoZ742B', // Chris   — charming, middle-aged male
+  Devon:         'CwhRBWXzGAHq8TQ4Fs17', // Roger   — laid-back resonant, middle-aged male
+  Sam_host:      'JBFqnCBsd6RMkjVDRZzb', // George  — warm storyteller, middle-aged male
+  James:         'cjVigY5qzO86Huf0OWal', // Eric    — smooth trustworthy, middle-aged male
+  Laura:         'Xb7hH8MSUJpSbSDYk0k2', // Alice   — educator, middle-aged female
+  coach:         'JBFqnCBsd6RMkjVDRZzb', // George  — warm, guiding, middle-aged male
+  host:          'hpp4J3VqNfWAUOO0d1Us', // Bella   — professional warm, middle-aged female
 };
 
 // ── Playback state ────────────────────────────────────────────────────────────
@@ -61,9 +73,9 @@ export async function generateSpeech(text: string, voiceId: string): Promise<str
         text,
         model_id: 'eleven_flash_v2_5',
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.4,
+          stability: 0.68,       // measured, calm — less variation = more mentor-like
+          similarity_boost: 0.78,
+          style: 0.18,           // subtle delivery — humble, not performative
           use_speaker_boost: true,
         },
       }),

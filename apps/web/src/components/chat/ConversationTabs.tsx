@@ -36,10 +36,10 @@ export function ConversationTabs() {
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '8px 16px',
                 border: 'none', borderRight: '1px solid var(--border)',
-                borderBottom: active ? '2px solid var(--accent)' : '2px solid transparent',
-                background: active ? 'var(--bg)' : 'transparent',
+                borderBottom: active ? '2px solid #111' : '2px solid transparent',
+                background: active ? 'var(--surface)' : 'transparent',
                 color: active ? 'var(--text)' : 'var(--text-3)',
-                fontSize: 12, fontWeight: active ? 600 : 400,
+                fontSize: 12, fontWeight: active ? 700 : 400,
                 cursor: 'pointer', transition: 'all .15s',
                 marginBottom: active ? -1 : 0,
                 whiteSpace: 'nowrap',
@@ -48,7 +48,7 @@ export function ConversationTabs() {
               <span style={{
                 display: 'inline-block',
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                background: active ? 'var(--accent)' : 'var(--border)',
+                background: active ? '#111' : 'var(--border)',
               }} />
               {c.topicLabel}
               <span style={{ fontSize: 10, color: 'var(--text-3)', marginLeft: 2 }}>

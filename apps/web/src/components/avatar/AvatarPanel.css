@@ -1,0 +1,188 @@
+/* src/components/avatar/AvatarPanel.css */
+
+.avatar-panel {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  inset: 0;
+  background: #0a0a0f;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.avatar-panel.speaking {
+  box-shadow: 0 0 20px rgba(23, 165, 137, 0.3);
+}
+
+.avatar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.coach-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #888;
+}
+
+.status-dot.live {
+  background: var(--accent);
+  animation: pulse-ring 1.5s infinite;
+}
+
+.coach-details {
+  line-height: 1.3;
+}
+
+.coach-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.coach-role {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.session-timer {
+  font-family: 'SF Mono', 'Menlo', 'monospace';
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.avatar-viewport {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0f;
+  overflow: hidden;
+}
+
+/* Video fills the viewport, letterboxed at natural aspect ratio — no stretching */
+.avatar-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #0a0a0f;
+}
+
+.connection-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+  background: #0a0a0f;
+}
+
+.connection-overlay.loading {
+  background: linear-gradient(135deg, #0a0a0f 0%, #101820 100%);
+  animation: pulse-bg 3s infinite alternate;
+}
+
+.connection-overlay.error {
+  background: #2a0f0f;
+}
+
+@keyframes pulse-bg {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+.connection-message {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 14px;
+}
+
+.error-icon {
+  width: 40px;
+  height: 40px;
+  color: #E53E3E;
+}
+
+.avatar-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.avatar-footer {
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.mic-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mic-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.mic-waves {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.mic-wave-bar {
+  width: 2px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--accent);
+  animation: wave 0.8s ease-in-out infinite alternate;
+}
+
+.mic-wave-bar:nth-child(2) { animation-delay: 0.2s; }
+.mic-wave-bar:nth-child(3) { animation-delay: 0.4s; }
+
+.end-session-btn {
+  background: rgba(229, 62, 62, 0.2);
+  border: 1px solid rgba(229, 62, 62, 0.4);
+  color: #FEB2B2;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.end-session-btn:hover {
+  background: rgba(229, 62, 62, 0.4);
+  color: #FFF;
+}

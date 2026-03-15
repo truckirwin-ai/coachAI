@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store/userStore';
 import { useToastStore } from '../store/toastStore';
@@ -7,17 +7,88 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { lessons } from '../data/lessons';
 import type { Lesson } from '../data/lessons';
 import { LessonPlayer } from '../components/lessons/LessonPlayer';
-import { PageHeader } from '../components/layout/PageHeader';
+import { COACHES as coaches, DEFAULT_COACH_ID } from '../data/coaches';
+import type { CoachDef } from '../data/coaches';
+import { useSessionStore } from '../store/sessionStore';
 
-const weekDots = [
-  { done: true },
-  { current: true },
-  { upcoming: true },
-  { upcoming: true },
-  { upcoming: true },
-];
 
 const recommendedLessons = lessons.slice(0, 3);
+
+function ResumeCard({ coach, topic, onResume }: { coach: CoachDef; topic: string; onResume: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative', borderRadius: 10, overflow: 'hidden',
+        border: '1px solid #e8e8e8',
+        cursor: 'pointer', height: '100%', minHeight: 110,
+        transform: hovered ? 'translateY(-2px)' : 'none',
+        boxShadow: hovered ? '0 6px 20px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.04)',
+        transition: 'transform 0.18s, box-shadow 0.18s',
+      }}
+      onClick={onResume}
+    >
+      {/* Coach headshot — fills card */}
+      <img
+        src={coach.previewUrl}
+        alt={coach.name}
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', objectPosition: 'center top',
+          transform: hovered ? 'scale(1.04)' : 'scale(1)',
+          transition: 'transform 0.3s ease',
+        }}
+      />
+
+      {/* Dark gradient overlay — bottom */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)',
+      }} />
+
+      {/* "Last Session" label — top left */}
+      <div style={{
+        position: 'absolute', top: 9, left: 10,
+        background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
+        borderRadius: 20, padding: '2px 8px',
+        fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.85)',
+        letterSpacing: '0.07em', textTransform: 'uppercase',
+      }}>
+        Last Session
+      </div>
+
+      {/* Play button — top right */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onResume(); }}
+        style={{
+          position: 'absolute', top: 8, right: 8,
+          width: 28, height: 28, borderRadius: '50%',
+          background: 'white', border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+          transition: 'transform 0.15s, background 0.15s',
+          transform: hovered ? 'scale(1.1)' : 'scale(1)',
+        }}
+      >
+        <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+          <path d="M1 1.5L9 6L1 10.5V1.5Z" fill="#111" />
+        </svg>
+      </button>
+
+      {/* Name + topic — bottom */}
+      <div style={{ position: 'absolute', bottom: 10, left: 10, right: 10 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: 'white', lineHeight: 1.2, letterSpacing: '-0.2px' }}>
+          {coach.name}
+        </div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', marginTop: 2 }}>
+          {topic}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const sessionBorderColor = (type: string) => {
   if (type === 'Voice') return '#17A589';
@@ -37,6 +108,10 @@ export function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
+  const { skillName } = useSessionStore();
+  const lastCoach = coaches.find(c => c.id === DEFAULT_COACH_ID) ?? coaches[0];
+  const lastTopic = skillName || 'Difficult Conversations';
+
   const handleSaveReflection = () => {
     if (!reflectionText.trim()) return;
     const existing = JSON.parse(localStorage.getItem('reflections') || '[]');
@@ -48,76 +123,61 @@ export function DashboardPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <PageHeader
-        title="Dashboard"
-        subtitle={`${greeting}, ${name || 'there'} · ${date}`}
-        action={
-          <button
-            onClick={() => navigate('/coaching')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: '#17A589', color: 'white',
-              fontSize: 13, fontWeight: 600,
-            }}
-          >
-            ▶ Start Session
-          </button>
-        }
-      />
+      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
+  <div>
+    <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111', letterSpacing: '-0.5px', margin: 0 }}>
+      {greeting}, {name || 'there'}
+    </h1>
+    <p style={{ fontSize: 13, color: '#888', margin: '4px 0 0' }}>{date}</p>
+  </div>
+  <button
+    onClick={() => navigate('/coaching')}
+    style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      padding: '9px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
+      background: '#111', color: 'white', fontSize: 13, fontWeight: 600,
+      marginTop: 4,
+    }}
+  >▶ Start Session</button>
+</div>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '24px 28px' }}>
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
+      {/* Top row: Resume card + 3 stat cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 14 }}>
+
+        {/* Resume Session card */}
+        <ResumeCard
+          coach={lastCoach}
+          topic={lastTopic}
+          onResume={() => navigate('/coaching')}
+        />
+
+        {/* Stat cards */}
         {[
-          { label: 'Skills Completed', value: '4', sub: 'of 8 in current program' },
-          { label: 'Avg. Eval Score', value: '81', sub: 'across all evaluations' },
-          { label: 'Session Streak', value: '12 days', sub: 'Best: 18 days' },
+          { label: 'Skills Completed', value: '4', sub: 'of 8 complete', trend: '+2 this month', iconBg: '#e8f5f1', icon: '📈' },
+          { label: 'Avg. Eval Score',  value: '81', sub: 'across all evals', trend: '↑ +5 pts',     iconBg: '#eff6ff', icon: '🎯' },
+          { label: 'Session Streak',   value: '12', sub: 'days · best: 18', trend: '🔥 Active',     iconBg: '#fff7ed', icon: '⚡' },
         ].map((s, i) => (
-          <div key={i} className="card">
-            <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 6 }}>{s.label}</div>
-            <div className="stat-number">{s.value}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 6 }}>{s.sub}</div>
+          <div key={i} style={{
+            background: 'white', border: '1px solid #e8e8e8', borderRadius: 10,
+            padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 7, background: s.iconBg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
+              }}>{s.icon}</div>
+              <span style={{ fontSize: 11, color: '#17A589', fontWeight: 600 }}>{s.trend}</span>
+            </div>
+            <div style={{ fontSize: 30, fontWeight: 800, color: '#111', marginTop: 10, lineHeight: 1, letterSpacing: '-1px' }}>{s.value}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#333', marginTop: 6 }}>{s.label}</div>
+            <div style={{ fontSize: 11, color: '#bbb', marginTop: 1 }}>{s.sub}</div>
           </div>
         ))}
       </div>
 
-      {/* Current Program */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1B3A5C 0%, #154360 100%)',
-        borderRadius: 12, padding: '28px 30px', color: 'white', marginBottom: 20,
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 180, height: 180, background: 'rgba(255,255,255,.07)', borderRadius: '50%' }} />
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,.2)', fontSize: 11, fontWeight: 600, marginBottom: 10 }}>Leadership Track</div>
-            <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Difficult Conversations</h3>
-            <p style={{ fontSize: 12, opacity: .75, marginBottom: 20, lineHeight: 1.5 }}>Week 2 of 4 — Refresher #2 due today. Practice navigating performance feedback with directness and empathy.</p>
-            {/* Week track */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              {weekDots.map((d, i) => (
-                <React.Fragment key={i}>
-                  <div style={{
-                    width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
-                    background: d.done ? 'white' : d.current ? 'white' : 'rgba(255,255,255,.25)',
-                    boxShadow: d.current ? '0 0 0 3px rgba(255,255,255,.3)' : 'none',
-                  }} />
-                  {i < weekDots.length - 1 && <div style={{ flex: 1, height: 2, background: d.done ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.2)', borderRadius: 2 }} />}
-                </React.Fragment>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => navigate('/coaching')} style={{ background: 'white', color: '#1B3A5C', padding: '9px 20px', borderRadius: 7, fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer' }}>▶ Start Today's Refresher</button>
-              <button onClick={() => navigate('/library')} style={{ background: 'rgba(255,255,255,.15)', color: 'white', padding: '9px 20px', borderRadius: 7, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer' }}>View Module</button>
-            </div>
-          </div>
-          <div style={{ background: 'rgba(255,191,0,.2)', border: '1px solid rgba(255,191,0,.4)', color: '#FFD700', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, flexShrink: 0 }}>Eval in 12 days</div>
-        </div>
-      </div>
-
       {/* Two column */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
         {/* Recent sessions */}
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
