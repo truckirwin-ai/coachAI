@@ -31,9 +31,18 @@ export function SessionPage() {
   const location = useLocation();
 
   useEffect(() => {
-    setCoachSelected(false);
-    setAutoStartSession(false);
-    setLaunchTopic(undefined);
+    const state = location.state as { resume?: boolean; coachId?: string; topicId?: string } | null;
+    if (state?.resume) {
+      // Dashboard "resume" — skip CoachSelect, jump straight into session
+      if (state.coachId) setSelectedCoachId(state.coachId);
+      if (state.topicId) setLaunchTopic(state.topicId);
+      setAutoStartSession(true);
+      setCoachSelected(true);
+    } else {
+      setCoachSelected(false);
+      setAutoStartSession(false);
+      setLaunchTopic(undefined);
+    }
   }, [location.key]);
 
   useEffect(() => {

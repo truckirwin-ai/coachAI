@@ -111,9 +111,10 @@ export function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const { skillName } = useSessionStore();
+  const { skillName, activeConversationId, conversations } = useSessionStore();
   const lastCoach = coaches.find(c => c.id === DEFAULT_COACH_ID) ?? coaches[0];
   const lastTopic = skillName || 'Difficult Conversations';
+  const lastTopicId = conversations.find(c => c.id === activeConversationId)?.topicId ?? 'difficult-conversations';
 
   const handleSaveReflection = () => {
     if (!reflectionText.trim()) return;
@@ -152,7 +153,7 @@ export function DashboardPage() {
         <ResumeCard
           coach={lastCoach}
           topic={lastTopic}
-          onResume={() => navigate('/coaching')}
+          onResume={() => navigate('/coaching', { state: { resume: true, coachId: lastCoach.id, topicId: lastTopicId } })}
         />
 
         {/* Stat cards */}
