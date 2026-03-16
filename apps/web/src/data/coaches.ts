@@ -123,47 +123,50 @@ export function formatTopicLabel(slug: string): string {
 
 /**
  * Builds a personality-matched opening greeting for each coach.
- * If a topic is selected, it's woven in naturally per the coach's voice.
- * Falls back to a generic opener when no topic is chosen.
+ * Every greeting hits three beats — in the coach's own voice:
+ *   1. Coach introduces themselves by name
+ *   2. Addresses the user by name (falls back to "there" if unknown)
+ *   3. Acknowledges the chosen topic and opens the conversation
  */
-export function buildGreeting(coach: CoachDef, topic?: string): string {
+export function buildGreeting(coach: CoachDef, topic?: string, userName?: string): string {
+  const u = userName?.trim() || 'there';
   const t = topic ? formatTopicLabel(topic) : null;
 
   switch (coach.id) {
     case 'frank': // Measured, direct, no wasted words
       return t
-        ? `Frank Donovan. You picked ${t} — that's the right place to start. Most people dance around it for years. What's the specific situation you're trying to crack right now?`
-        : `Frank Donovan. You made it to the chair. That's the first move. What are we solving today?`;
+        ? `${u}, I'm Frank Donovan. You picked ${t} — that's the right place to start. Most people dance around it for years. What's the specific situation you're trying to crack right now?`
+        : `${u}, I'm Frank Donovan. You made it to the chair. That's the first move. What are we solving today?`;
 
     case 'carol': // Warm, unhurried, perceptive
       return t
-        ? `Hi, I'm Carol. ${t} — I'm glad you named that. It's one of those things that sounds straightforward until you're actually in it. What's been coming up for you around this lately?`
-        : `Hi, I'm Carol. There's no rush here. Whatever brought you in today — I'd love to hear it in your own words.`;
+        ? `Hi ${u}, I'm Carol Reeves. I'm glad you chose ${t} — it's one of those things that sounds simple until you're actually in it. What's been coming up for you around this lately?`
+        : `Hi ${u}, I'm Carol Reeves. There's no rush here. Whatever brought you in today — I'd love to hear it in your own words.`;
 
     case 'denise': // Empathetic but direct, no HR theater
       return t
-        ? `Hey, I'm Denise. ${t} — good. Let's not sugarcoat it. Before I give you any advice, help me understand the situation on the ground. What's actually happening?`
-        : `Hey, I'm Denise. I've built people programs at places where things moved fast and broke often. Tell me what you're dealing with and let's figure it out.`;
+        ? `Hey ${u}, I'm Denise Carter. You picked ${t} — good call. Before I say anything, help me understand what's actually happening on the ground. What's the situation?`
+        : `Hey ${u}, I'm Denise Carter. I've built people programs at places where things moved fast and broke often. Tell me what you're dealing with and let's figure it out.`;
 
     case 'damon': // High energy, results-obsessed, tactical
       return t
-        ? `Damon Hayes. ${t} — yes. That's where deals get made or lost. I'm not here to theorize — I want to know exactly where you're stuck. What's the scenario?`
-        : `Damon Hayes. You're here, which means you want to move. So let's move. What's the number one thing standing between you and the next level right now?`;
+        ? `${u}, Damon Hayes. You chose ${t} — that's where deals get made or lost. I'm not here to theorize. Tell me exactly where you're stuck right now.`
+        : `${u}, Damon Hayes. You showed up, which means you want to move. So let's move. What's the number one thing standing between you and the next level?`;
 
     case 'linda': // Sharp, strategic, sees three moves ahead
       return t
-        ? `Linda Zhao. ${t} is a lever — most people just don't know which end to pull. I want to understand your situation before I say anything else. Walk me through what's in front of you.`
-        : `Linda Zhao. Strategy starts with an honest read of where you actually are. So tell me — what's the gap between where you are and where you need to be?`;
+        ? `${u}, I'm Linda Zhao. ${t} is a real lever — most people just don't know which end to pull. Walk me through your situation before I say anything else.`
+        : `${u}, I'm Linda Zhao. Strategy starts with an honest read of where you actually are. So tell me — what's the gap between where you are and where you need to be?`;
 
     case 'nora': // Calm, analytical, technical precision
       return t
-        ? `Hi, I'm Nora. ${t} comes up constantly in engineering leadership — usually when the technical skills that got you here stop being enough. Tell me what's surfacing for you.`
-        : `Hi, I'm Nora. The shift from individual contributor to leader is harder than anyone tells you. I want to understand where you are in that transition. What's feeling off?`;
+        ? `Hi ${u}, I'm Nora Ishikawa. ${t} comes up constantly in engineering leadership — usually when the skills that got you here stop being enough. What's surfacing for you on this?`
+        : `Hi ${u}, I'm Nora Ishikawa. The shift from individual contributor to leader is harder than anyone tells you. Where are you in that transition right now?`;
 
     default:
       return t
-        ? `Hi, I'm ${coach.name}. I see you want to work on ${t}. Good place to start. What's the situation you're working through?`
-        : `Hi, I'm ${coach.name}, your ${coach.specialty} coach. What's on your mind today?`;
+        ? `Hi ${u}, I'm ${coach.name}. I see you want to work on ${t}. Good place to start. What's the situation you're working through?`
+        : `Hi ${u}, I'm ${coach.name}, your ${coach.specialty} coach. What's on your mind today?`;
   }
 }
 
