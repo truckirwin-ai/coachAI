@@ -71,7 +71,9 @@ export function useAvatarSession() {
   const systemRef   = useRef<string>('You are a professional coach. Be concise and Socratic.');
   const skillRef    = useRef<string>('Coaching');
   const greetingRef = useRef<string>("Hi! I'm your coach. What are you working through today?");
-  const greetingSentRef = useRef<boolean>(false); // prevents echo-suppressing the greeting
+  const greetingSentRef    = useRef<boolean>(false); // prevents echo-suppressing the greeting
+  const greetingConfirmed  = useRef<boolean>(false); // set true when AVATAR_SPEAK_STARTED fires
+  const greetingRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Mute/unmute — no state guards, always attempt ─────────────────
   const muteMic = useCallback(() => {
@@ -91,10 +93,12 @@ export function useAvatarSession() {
 
   // ── Start session (must be called from a user click for AudioContext) ──
   const startSession = useCallback(async (coach: CoachDef, topic?: string) => {
-    greetingRef.current   = buildGreeting(coach, topic);
-    systemRef.current     = coach.systemPrompt;
-    skillRef.current      = coach.specialty;
-    greetingSentRef.current = false;
+    greetingRef.current      = buildGreeting(coach, topic);
+    systemRef.current        = coach.systemPrompt;
+    skillRef.current         = coach.specialty;
+    greetingSentRef.current  = false;
+    greetingConfirmed.current = false;
+    if (greetingRetryTimer.current) clearTimeout(greetingRetryTimer.current);
 
     async function init() {
       try {
@@ -103,15 +107,27 @@ export function useAvatarSession() {
         const session = new LiveAvatarSession(session_token, { voiceChat: false });
         sessionRef.current = session;
 
+        // ── Greeting with retry ───────────────────────────────────────
+        const attemptGreeting = (attemptsLeft: number) => {
+          if (greetingConfirmed.current) return; // AVATAR_SPEAK_STARTED already confirmed
+          lastAvatarText.current = greetingRef.current;
+          if (!greetingSentRef.current) {
+            greetingSentRef.current = true;
+            historyRef.current = [{ role: 'assistant', content: greetingRef.current }];
+          }
+          session.message(greetingRef.current);
+          console.log(`[Coach] Greeting attempt ${4 - attemptsLeft}/3`);
+          if (attemptsLeft > 0) {
+            greetingRetryTimer.current = setTimeout(() => attemptGreeting(attemptsLeft - 1), 5000);
+          }
+        };
+
         // ── Lifecycle ────────────────────────────────────────────────
         session.on(SessionEvent.SESSION_STATE_CHANGED, (s: SessionState) => {
           setSessionState(s);
-          // Send greeting exactly once when session reaches CONNECTED state
+          // Fire greeting immediately when CONNECTED — no delay, WebSocket is open right now
           if (s === SessionState.CONNECTED && !greetingSentRef.current) {
-            greetingSentRef.current = true;
-            lastAvatarText.current = greetingRef.current;
-            historyRef.current = [{ role: 'assistant', content: greetingRef.current }];
-            setTimeout(() => session.message(greetingRef.current), 400);
+            attemptGreeting(3); // up to 3 retries every 3s until AVATAR_SPEAK_STARTED confirms
           }
         });
 
@@ -148,6 +164,12 @@ export function useAvatarSession() {
 
         // ── Layer 1: Mute during avatar speech ───────────────────────
         session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, () => {
+          // Cancel greeting retry loop — avatar is speaking, it worked
+          if (!greetingConfirmed.current) {
+            greetingConfirmed.current = true;
+            if (greetingRetryTimer.current) clearTimeout(greetingRetryTimer.current);
+            console.log('[Coach] Greeting confirmed by AVATAR_SPEAK_STARTED');
+          }
           avatarSpeakingRef.current = true;
           setIsAvatarSpeaking(true);
           if (unmutTimer.current) clearTimeout(unmutTimer.current);
@@ -173,11 +195,16 @@ export function useAvatarSession() {
           try { session.interrupt(); } catch {}
 
           // Drop transcript if it's likely the avatar's own echo
-          // Exception: never suppress during greeting window (first 8s after session starts)
           const words = text.split(/\s+/).filter(Boolean);
           if (greetingSentRef.current && words.length > ECHO_MIN_WORDS) {
             const overlap = wordOverlap(text, lastAvatarText.current);
             if (overlap >= ECHO_OVERLAP_THRESHOLD) {
+              // Echo confirms avatar is speaking — stop retry loop
+              if (!greetingConfirmed.current) {
+                greetingConfirmed.current = true;
+                if (greetingRetryTimer.current) clearTimeout(greetingRetryTimer.current);
+                console.log('[Coach] Greeting confirmed via echo suppression');
+              }
               console.log(`[Coach] Echo suppressed (${Math.round(overlap * 100)}% overlap): "${text}"`);
               return;
             }
@@ -235,6 +262,7 @@ export function useAvatarSession() {
   useEffect(() => {
     return () => {
       if (unmutTimer.current) clearTimeout(unmutTimer.current);
+      if (greetingRetryTimer.current) clearTimeout(greetingRetryTimer.current);
       sessionRef.current?.stop();
       sessionRef.current = null;
     };
