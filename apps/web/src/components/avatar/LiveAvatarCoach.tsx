@@ -234,6 +234,7 @@ export function LiveAvatarCoach({
           ref={videoRef}
           autoPlay
           playsInline
+          muted
           className="avatar-video"
           style={{ opacity: streamReady ? 1 : 0, transition: 'opacity .4s ease' }}
         />

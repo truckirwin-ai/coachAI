@@ -141,17 +141,43 @@ export function useAvatarSession() {
         session.on(SessionEvent.SESSION_STREAM_READY, async () => {
           setStreamReady(true);
 
-          if (videoElRef.current) {
-            session.attach(videoElRef.current);
-            videoElRef.current.play().catch(() => {});
+          // Video element might not be in the DOM yet if autoStart triggered a React re-render
+          // Poll up to 2s to wait for it to mount
+          const waitForVideoEl = (): Promise<HTMLVideoElement | null> =>
+            new Promise(resolve => {
+              if (videoElRef.current) return resolve(videoElRef.current);
+              let elapsed = 0;
+              const t = setInterval(() => {
+                elapsed += 50;
+                if (videoElRef.current || elapsed >= 2000) {
+                  clearInterval(t);
+                  resolve(videoElRef.current);
+                }
+              }, 50);
+            });
+
+          const el = await waitForVideoEl();
+          if (el) {
+            session.attach(el);
+            // Play muted first — guaranteed autoplay in all browsers
+            // Unmute immediately after so the user hears the avatar
+            el.muted = true;
+            el.play()
+              .then(() => { el.muted = false; })
+              .catch(() => { el.muted = false; });
+            console.log('[Coach] Video attached and playing');
+          } else {
+            console.warn('[Coach] Video element never mounted — audio may not play');
           }
 
-          // Start mic first — greeting fires after voiceChat is confirmed ready
+          // Start mic (separate from video attach)
           try {
             await session.voiceChat.start({ defaultMuted: true });
             scheduleUnmute(AEC_WARMUP_MS);
+            console.log('[Coach] VoiceChat started');
           } catch (e: any) {
             const msg = e?.message ?? String(e);
+            console.warn('[Coach] VoiceChat start failed:', msg);
             setMicError(
               msg.includes('NotAllowed') || msg.includes('ermission')
                 ? 'Mic blocked — allow microphone access in browser settings'
