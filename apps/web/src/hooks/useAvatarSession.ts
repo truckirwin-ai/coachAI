@@ -215,26 +215,29 @@ export function useAvatarSession() {
         // ── Layer 3: Transcript + word-overlap echo filter ───────────
         session.on(AgentEventsEnum.USER_TRANSCRIPTION, async (event: any) => {
           const text = event?.text?.trim();
-          if (!text || processingRef.current) return;
+          if (!text) return;
 
-          // Kill HeyGen's built-in LLM response before it speaks — we'll use Claude instead
-          try { session.interrupt(); } catch {}
-
-          // Drop transcript if it's likely the avatar's own echo
+          // ── Echo filter FIRST — before anything else ─────────────
+          // If this transcript is the avatar's own speech echoed through the mic,
+          // suppress it and DO NOT call interrupt() (that would kill the greeting/response).
           const words = text.split(/\s+/).filter(Boolean);
           if (greetingSentRef.current && words.length > ECHO_MIN_WORDS) {
             const overlap = wordOverlap(text, lastAvatarText.current);
             if (overlap >= ECHO_OVERLAP_THRESHOLD) {
-              // Echo confirms avatar is speaking — stop retry loop
               if (!greetingConfirmed.current) {
                 greetingConfirmed.current = true;
                 if (greetingRetryTimer.current) clearTimeout(greetingRetryTimer.current);
                 console.log('[Coach] Greeting confirmed via echo suppression');
               }
               console.log(`[Coach] Echo suppressed (${Math.round(overlap * 100)}% overlap): "${text}"`);
-              return;
+              return; // ← exit before interrupt — never kill our own audio
             }
           }
+
+          if (processingRef.current) return;
+
+          // Kill HeyGen's built-in LLM — only fires for genuine user speech, never echoes
+          try { session.interrupt(); } catch {}
 
           console.log('[Coach] User:', text);
           processingRef.current = true;
@@ -316,6 +319,7 @@ export function useAvatarSession() {
   return {
     sessionState, streamReady, micState, micError,
     isAvatarSpeaking, isUserSpeaking, error,
+    greetingSent: greetingSentRef.current, greetingConfirmed: greetingConfirmed.current,
     startSession, attachVideo, sendMessage,
     interrupt, setMicDevice, retryMic, sessionRef,
   };
