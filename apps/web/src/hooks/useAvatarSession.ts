@@ -34,7 +34,9 @@ import { createAvatarSession } from '../api/liveavatar';
 import { sendCoachMessage } from '../api/claude';
 import type { ClaudeMessage } from '../api/claude';
 import type { CoachDef } from '../data/coaches';
-import { buildGreeting } from '../data/coaches';
+import { buildGreeting, buildTopicTransition } from '../data/coaches';
+import { useLastSessionStore } from '../store/lastSessionStore';
+import type { PersistedMessage } from '../store/lastSessionStore';
 
 const AEC_WARMUP_MS = 2500; // let Chrome AEC3 adapt before first unmute
 const POST_SPEAK_MS = 1000; // cooldown after avatar stops — echo dies out
@@ -51,7 +53,7 @@ function wordOverlap(a: string, b: string): number {
   return matches / Math.max(setA.size, setB.size);
 }
 
-export function useAvatarSession() {
+export function useAvatarSession(initialHistory?: PersistedMessage[]) {
   const [sessionState,     setSessionState]     = useState<SessionState>(SessionState.INACTIVE);
   const [streamReady,      setStreamReady]       = useState(false);
   const [micState,         setMicState]          = useState<VoiceChatState>(VoiceChatState.INACTIVE);
@@ -62,7 +64,10 @@ export function useAvatarSession() {
 
   const sessionRef         = useRef<LiveAvatarSession | null>(null);
   const videoElRef         = useRef<HTMLVideoElement | null>(null);
-  const historyRef         = useRef<ClaudeMessage[]>([]);
+  const historyRef         = useRef<ClaudeMessage[]>(initialHistory ?? []);
+  const coachIdRef         = useRef<string>('');
+  const topicIdRef         = useRef<string | undefined>(undefined);
+  const topicLabelRef      = useRef<string>('');
   const processingRef      = useRef(false);
   const unmutTimer         = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarSpeakingRef  = useRef(false);       // synchronous version for race guard
@@ -71,11 +76,15 @@ export function useAvatarSession() {
   const systemRef   = useRef<string>('You are a professional coach. Be concise and Socratic.');
   const skillRef    = useRef<string>('Coaching');
   const greetingRef = useRef<string>("Hi! I'm your coach. What are you working through today?");
+  const { saveSession } = useLastSessionStore();
   const greetingSentRef    = useRef<boolean>(false); // prevents echo-suppressing the greeting
   const greetingConfirmed  = useRef<boolean>(false); // set true when AVATAR_SPEAK_STARTED fires
   const greetingRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Mute/unmute — no state guards, always attempt ─────────────────
+  // In SDK 0.0.11, AVATAR_SPEAK_STARTED/ENDED now fire via LiveKit data channel,
+  // so muting the mic here reliably prevents HeyGen's STT from hearing the
+  // avatar's own voice and echoing it back as user speech ("Hi Denise" bug).
   const muteMic = useCallback(() => {
     try { sessionRef.current?.voiceChat?.mute(); } catch {}
   }, []);
@@ -92,8 +101,24 @@ export function useAvatarSession() {
   }, [unmuteMic]);
 
   // ── Start session (must be called from a user click for AudioContext) ──
-  const startSession = useCallback(async (coach: CoachDef, topic?: string) => {
-    greetingRef.current      = buildGreeting(coach, topic);
+  const startSession = useCallback(async (coach: CoachDef, topic?: string, resumeHistory?: PersistedMessage[]) => {
+    // Track for persistence + topic transitions
+    coachRef.current      = coach;
+    coachIdRef.current    = coach.id;
+    topicIdRef.current    = topic;
+    topicLabelRef.current = coach.specialty;
+
+    // Seed conversation history — resume if provided, else fresh
+    if (resumeHistory && resumeHistory.length > 0) {
+      historyRef.current = resumeHistory;
+      const lastExchange = resumeHistory.filter(m => m.role === 'assistant').slice(-1)[0];
+      const lastLine = lastExchange?.content?.split(/[.!?]/)[0]?.trim() ?? '';
+      greetingRef.current = `Welcome back. Last time we were on ${lastLine ? `"${lastLine.slice(0, 60)}…"` : topic ?? 'your coaching session'}. Ready to pick up where we left off?`;
+    } else {
+      historyRef.current   = [];
+      greetingRef.current  = buildGreeting(coach, topic);
+    }
+
     systemRef.current        = coach.systemPrompt;
     skillRef.current         = coach.specialty;
     greetingSentRef.current  = false;
@@ -106,6 +131,33 @@ export function useAvatarSession() {
         const { session_token } = await createAvatarSession(coach);
         const session = new LiveAvatarSession(session_token, { voiceChat: false });
         sessionRef.current = session;
+
+        // ── Patch: force text-speak commands through LiveKit, not WebSocket ────
+        // SDK bug: sendCommandEvent prefers WebSocket when open, but
+        // sendCommandEventToWebSocket has no handler for avatar.speak_response
+        // or avatar.speak_text — they fall to default: {} and are silently dropped.
+        // Interrupt and listen commands still go through WebSocket (they are handled).
+        const TEXT_SPEAK_COMMANDS = new Set(['avatar.speak_response', 'avatar.speak_text']);
+        const _origSend = (session as any).sendCommandEvent.bind(session);
+        (session as any).sendCommandEvent = (cmd: any) => {
+          if (TEXT_SPEAK_COMMANDS.has(cmd.event_type) && (session as any).room?.state === 'connected') {
+            const data = new TextEncoder().encode(JSON.stringify(cmd));
+            (session as any).room.localParticipant.publishData(data, { reliable: true, topic: 'agent-control' });
+          } else {
+            _origSend(cmd);
+          }
+        };
+        // ─────────────────────────────────────────────────────────────────────
+
+        // ── Hard timeout: if CONNECTED hasn't fired within 20s, bail out ──
+        const startTimeout = setTimeout(() => {
+          if (sessionRef.current === session) {
+            console.warn('[Coach] Session start timed out after 20s');
+            setError('Unable to connect — avatar service is taking too long. Try again in a moment.');
+            setSessionState(SessionState.DISCONNECTED);
+            try { session.stop(); } catch {}
+          }
+        }, 20000);
 
         // ── Greeting with retry ───────────────────────────────────────
         const attemptGreeting = (attemptsLeft: number) => {
@@ -125,9 +177,11 @@ export function useAvatarSession() {
         // ── Lifecycle ────────────────────────────────────────────────
         session.on(SessionEvent.SESSION_STATE_CHANGED, (s: SessionState) => {
           setSessionState(s);
-          // Fire greeting immediately when CONNECTED — no delay, WebSocket is open right now
-          if (s === SessionState.CONNECTED && !greetingSentRef.current) {
-            attemptGreeting(3); // up to 3 retries every 3s until AVATAR_SPEAK_STARTED confirms
+          if (s === SessionState.CONNECTED) {
+            clearTimeout(startTimeout); // cancel the hard timeout — we made it
+            if (!greetingSentRef.current) {
+              attemptGreeting(3); // up to 3 retries every 5s until confirmed
+            }
           }
         });
 
@@ -255,6 +309,8 @@ export function useAvatarSession() {
             if (response) {
               lastAvatarText.current = response;
               historyRef.current.push({ role: 'assistant', content: response });
+              // Persist session so dashboard always shows latest and resume works
+              saveSession(coachIdRef.current, topicIdRef.current, topicLabelRef.current, historyRef.current);
               session.message(response);
             }
           } catch (e) {
@@ -306,6 +362,28 @@ export function useAvatarSession() {
   }, [streamReady]);
 
   const sendMessage  = useCallback((text: string) => { sessionRef.current?.message(text); }, []);
+
+  // ── Topic change: coach wraps current thread and opens new one ────
+  const coachRef = useRef<CoachDef | null>(null);
+  const changeTopic = useCallback((fromTopicLabel: string, toTopicLabel: string, toTopicId: string) => {
+    if (!sessionRef.current || !coachRef.current) return;
+    const transitionText = buildTopicTransition(coachRef.current, fromTopicLabel, toTopicLabel);
+    // Update skill context so subsequent Claude responses use the new topic
+    skillRef.current = toTopicLabel;
+    topicIdRef.current = toTopicId;
+    topicLabelRef.current = toTopicLabel;
+    // Push topic shift into history so Claude has context
+    historyRef.current.push({
+      role: 'user',
+      content: `[Topic changed to: ${toTopicLabel}]`,
+    });
+    historyRef.current.push({
+      role: 'assistant',
+      content: transitionText,
+    });
+    lastAvatarText.current = transitionText;
+    sessionRef.current.message(transitionText);
+  }, []);
   const setMicDevice = useCallback(async (deviceId: string) => sessionRef.current?.voiceChat.setDevice(deviceId) ?? false, []);
   const retryMic     = useCallback(async () => {
     if (!sessionRef.current) return;
@@ -320,7 +398,7 @@ export function useAvatarSession() {
     sessionState, streamReady, micState, micError,
     isAvatarSpeaking, isUserSpeaking, error,
     greetingSent: greetingSentRef.current, greetingConfirmed: greetingConfirmed.current,
-    startSession, attachVideo, sendMessage,
+    startSession, attachVideo, sendMessage, changeTopic,
     interrupt, setMicDevice, retryMic, sessionRef,
   };
 }

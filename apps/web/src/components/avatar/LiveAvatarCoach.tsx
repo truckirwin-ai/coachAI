@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { useAvatarSession } from '../../hooks/useAvatarSession';
 import { SessionState, VoiceChatState } from '@heygen/liveavatar-web-sdk';
 import './AvatarPanel.css';
 import type { CoachDef } from '../../data/coaches';
+import type { PersistedMessage } from '../../store/lastSessionStore';
 
 interface AudioDevice { deviceId: string; label: string; }
 
@@ -93,6 +94,7 @@ export interface LiveAvatarCoachProps {
   onEndSession?: () => void;
   autoStart?: boolean;
   topic?: string;
+  resumeHistory?: PersistedMessage[];
 }
 
 const MicIndicator = () => (
@@ -108,7 +110,7 @@ const MicIndicator = () => (
   </div>
 );
 
-const ConnectionStateDisplay = ({ state, error }: { state: SessionState; error: string | null }) => (
+const ConnectionStateDisplay = ({ state, error, onRetry }: { state: SessionState; error: string | null; onRetry?: () => void }) => (
   <div className={`connection-overlay ${error ? 'error' : 'loading'}`}>
     {error ? (
       <>
@@ -116,6 +118,20 @@ const ConnectionStateDisplay = ({ state, error }: { state: SessionState; error: 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span className="connection-message" style={{ maxWidth: '80%', textAlign: 'center' }}>{error}</span>
+        {onRetry && (
+          <button onClick={onRetry} style={{
+            marginTop: 16,
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: 8,
+            color: '#fff',
+            padding: '8px 20px',
+            fontSize: 13,
+            cursor: 'pointer',
+          }}>
+            ↺ Try Again
+          </button>
+        )}
       </>
     ) : (
       <>
@@ -137,14 +153,22 @@ const ConnectionStateDisplay = ({ state, error }: { state: SessionState; error: 
   </div>
 );
 
+// --- IMPERATIVE HANDLE ---
+export interface LiveAvatarCoachHandle {
+  changeTopic: (fromTopicLabel: string, toTopicLabel: string, toTopicId: string) => void;
+}
+
 // --- MAIN COMPONENT ---
-export function LiveAvatarCoach({
+export const LiveAvatarCoach = forwardRef<LiveAvatarCoachHandle, LiveAvatarCoachProps>(function LiveAvatarCoach({
   coach,
   onEndSession,
   autoStart = false,
   topic,
-}: LiveAvatarCoachProps) {
-  const { sessionState, streamReady, micState, micError, isAvatarSpeaking: avatarTalking, isUserSpeaking: userTalking, error, startSession, interrupt, attachVideo, setMicDevice, retryMic } = useAvatarSession();
+  resumeHistory,
+}, ref) {
+  const { sessionState, streamReady, micState, micError, isAvatarSpeaking: avatarTalking, isUserSpeaking: userTalking, error, startSession, interrupt, attachVideo, setMicDevice, retryMic, changeTopic } = useAvatarSession(resumeHistory);
+
+  useImperativeHandle(ref, () => ({ changeTopic }), [changeTopic]);
   const micActive = micState === VoiceChatState.ACTIVE;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [started, setStarted] = useState(false);
@@ -152,8 +176,12 @@ export function LiveAvatarCoach({
 
   const handleStart = useCallback(() => {
     setStarted(true);
-    startSession(coach, topic);
-  }, [startSession, coach, topic]);
+    startSession(coach, topic, resumeHistory);
+  }, [startSession, coach, topic, resumeHistory]);
+
+  const handleRetry = useCallback(() => {
+    startSession(coach, topic, resumeHistory);
+  }, [startSession, coach, topic, resumeHistory]);
 
   const handleMicSelect = useCallback(async (deviceId: string) => {
     setActiveMicId(deviceId);
@@ -229,7 +257,7 @@ export function LiveAvatarCoach({
     <div className={`avatar-panel ${avatarTalking ? 'speaking' : ''}`}>
       {/* Viewport */}
       <main className="avatar-viewport">
-        {!streamReady && <ConnectionStateDisplay state={sessionState} error={error} />}
+        {!streamReady && <ConnectionStateDisplay state={sessionState} error={error} onRetry={error ? handleRetry : undefined} />}
         <video
           ref={videoRef}
           autoPlay
@@ -269,4 +297,4 @@ export function LiveAvatarCoach({
       </footer>
     </div>
   );
-}
+});

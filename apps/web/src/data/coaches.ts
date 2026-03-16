@@ -166,3 +166,26 @@ export function buildGreeting(coach: CoachDef, topic?: string): string {
         : `Hi, I'm ${coach.name}, your ${coach.specialty} coach. What's on your mind today?`;
   }
 }
+
+/**
+ * Builds a coach-voiced topic transition — wraps up the current thread
+ * and opens the new one in the coach's own style.
+ */
+export function buildTopicTransition(coach: CoachDef, fromTopic: string, toTopic: string): string {
+  switch (coach.id) {
+    case 'frank':
+      return `Good. We're closing out ${fromTopic} — keep whatever you took from that. Now: ${toTopic}. Same question I always ask. What's the specific situation you're trying to crack?`;
+    case 'carol':
+      return `Let's gently wrap up what we were exploring around ${fromTopic}. You can always come back to it. For now — ${toTopic}. What's been coming up for you there lately?`;
+    case 'denise':
+      return `Alright, let's move on. We're shifting from ${fromTopic} to ${toTopic}. Before I say anything, tell me what's actually happening on the ground with this one.`;
+    case 'damon':
+      return `Pivoting — ${fromTopic} is behind us. ${toTopic} is where we're going. What's the number you're trying to move, and what's in the way right now?`;
+    case 'linda':
+      return `Good pivot. ${fromTopic} is parked for now. ${toTopic} is a different lever entirely. Before I say anything — what's your honest read of where you are with this?`;
+    case 'nora':
+      return `Understood — we're wrapping ${fromTopic} and moving into ${toTopic}. That shift comes up a lot in engineering leadership. What's surfacing for you on this one?`;
+    default:
+      return `Got it — let's shift from ${fromTopic} to ${toTopic}. What's on your mind as we make that move?`;
+  }
+}

@@ -13,11 +13,13 @@ import { LessonPlayer } from '../components/lessons/LessonPlayer';
 import { COACHES as coaches, DEFAULT_COACH_ID } from '../data/coaches';
 import type { CoachDef } from '../data/coaches';
 import { useSessionStore } from '../store/sessionStore';
+import { useLastSessionStore } from '../store/lastSessionStore';
+import { formatTopicLabel } from '../data/coaches';
 
 
 const recommendedLessons = lessons.slice(0, 3);
 
-function ResumeCard({ coach, topic, onResume }: { coach: CoachDef; topic: string; onResume: () => void }) {
+function ResumeCard({ coach, topic, timeAgo, onResume }: { coach: CoachDef; topic: string; timeAgo?: string | null; onResume: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -59,7 +61,7 @@ function ResumeCard({ coach, topic, onResume }: { coach: CoachDef; topic: string
         fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.85)',
         letterSpacing: '0.07em', textTransform: 'uppercase',
       }}>
-        Last Session
+        {timeAgo ? `Last · ${timeAgo}` : 'Last Session'}
       </div>
 
       {/* Play button — top right */}
@@ -111,10 +113,26 @@ export function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const { skillName, activeConversationId, conversations } = useSessionStore();
-  const lastCoach = coaches.find(c => c.id === DEFAULT_COACH_ID) ?? coaches[0];
-  const lastTopic = skillName || 'Difficult Conversations';
-  const lastTopicId = conversations.find(c => c.id === activeConversationId)?.topicId ?? 'difficult-conversations';
+  const { skillName } = useSessionStore();
+  const { coachId: savedCoachId, topicId: savedTopicId, topicLabel: savedTopicLabel, savedAt } = useLastSessionStore();
+
+  // Prefer persisted last session; fall back to defaults
+  const lastCoach = coaches.find(c => c.id === (savedCoachId ?? DEFAULT_COACH_ID)) ?? coaches[0];
+  const lastTopicId = savedTopicId ?? 'difficult-conversations';
+  const lastTopic = savedTopicLabel
+    ? `${savedTopicLabel} · ${savedTopicId ? formatTopicLabel(savedTopicId) : ''}`
+    : (skillName || 'Difficult Conversations');
+
+  // Format relative time for the card label
+  const sessionAgo = (() => {
+    if (!savedAt) return null;
+    const diff = Date.now() - new Date(savedAt).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  })();
 
   const handleSaveReflection = () => {
     if (!reflectionText.trim()) return;
@@ -153,6 +171,7 @@ export function DashboardPage() {
         <ResumeCard
           coach={lastCoach}
           topic={lastTopic}
+          timeAgo={sessionAgo}
           onResume={() => navigate('/coaching', { state: { resume: true, coachId: lastCoach.id, topicId: lastTopicId } })}
         />
 

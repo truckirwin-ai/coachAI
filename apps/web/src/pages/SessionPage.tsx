@@ -1,7 +1,7 @@
 // © 2026 Foundry SMB LLC. All rights reserved.
 // CoachAI — SessionPage
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ChatWindow } from '../components/chat/ChatWindow';
 import { MessageInput } from '../components/chat/MessageInput';
@@ -13,8 +13,11 @@ import { useVoiceSession } from '../hooks/useVoiceSession';
 import { ConversationTabs } from '../components/chat/ConversationTabs';
 import { mockMessages } from '../data/mockData';
 import { LiveAvatarCoach } from '../components/avatar/LiveAvatarCoach';
+import type { LiveAvatarCoachHandle } from '../components/avatar/LiveAvatarCoach';
 import { CoachSelect } from '../components/coach/CoachSelect';
 import { getCoach, DEFAULT_COACH_ID } from '../data/coaches';
+import { useLastSessionStore } from '../store/lastSessionStore';
+import type { PersistedMessage } from '../store/lastSessionStore';
 
 type Mode = 'avatar' | 'voice' | 'text';
 
@@ -28,20 +31,27 @@ export function SessionPage() {
   const [selectedCoachId, setSelectedCoachId] = useState(DEFAULT_COACH_ID);
   const [autoStartSession, setAutoStartSession] = useState(false);
   const [launchTopic, setLaunchTopic] = useState<string | undefined>(undefined);
+  const [resumeHistory, setResumeHistory] = useState<PersistedMessage[] | undefined>(undefined);
+  const avatarRef = useRef<LiveAvatarCoachHandle>(null);
   const location = useLocation();
+  const { history: savedHistory, coachId: savedCoachId, topicId: savedTopicId } = useLastSessionStore();
 
   useEffect(() => {
     const state = location.state as { resume?: boolean; coachId?: string; topicId?: string } | null;
     if (state?.resume) {
-      // Dashboard "resume" — skip CoachSelect, jump straight into session
-      if (state.coachId) setSelectedCoachId(state.coachId);
-      if (state.topicId) setLaunchTopic(state.topicId);
+      // Dashboard "resume" — use saved coach/topic and reload conversation history
+      const coachId = state.coachId ?? savedCoachId;
+      const topicId = state.topicId ?? savedTopicId ?? undefined;
+      if (coachId) setSelectedCoachId(coachId);
+      if (topicId) setLaunchTopic(topicId);
+      setResumeHistory(savedHistory.length > 0 ? savedHistory : undefined);
       setAutoStartSession(true);
       setCoachSelected(true);
     } else {
       setCoachSelected(false);
       setAutoStartSession(false);
       setLaunchTopic(undefined);
+      setResumeHistory(undefined);
     }
   }, [location.key]);
 
@@ -62,12 +72,20 @@ export function SessionPage() {
   }, [messages.length, setSession]);
 
   const handleTopicChange = useCallback((topicId: string) => {
-    const topic = COACHING_TOPICS.find(t => t.id === topicId);
-    if (!topic) return;
+    const newTopic = COACHING_TOPICS.find(t => t.id === topicId);
+    if (!newTopic) return;
+    const oldTopic = COACHING_TOPICS.find(t => t.id === currentTopic);
+    const fromLabel = oldTopic?.label ?? currentTopic;
     setCurrentTopic(topicId);
-    setSkill(topic.label, topic.domain);
-    addCoachMessage(`Let's shift our focus to **${topic.label}**. What's on your mind about this — what are you working through right now?`);
-  }, [setSkill, addCoachMessage]);
+    setSkill(newTopic.label, newTopic.domain);
+    // In avatar mode: have the coach speak the transition
+    if (mode === 'avatar' && avatarRef.current) {
+      avatarRef.current.changeTopic(fromLabel, newTopic.label, topicId);
+    } else {
+      // Text/voice mode: post as chat message
+      addCoachMessage(`Let's shift our focus to **${newTopic.label}**. What's on your mind about this — what are you working through right now?`);
+    }
+  }, [currentTopic, mode, setSkill, addCoachMessage]);
 
   const handleTranscript = useCallback((text: string) => setPendingInput(text), [setPendingInput]);
   const handleVoiceSend = useCallback((text: string) => {
@@ -110,6 +128,7 @@ export function SessionPage() {
               boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
             }}>
               <LiveAvatarCoach
+                ref={avatarRef}
                 coach={getCoach(selectedCoachId)}
                 isCoachSpeaking={isSpeaking}
                 isUserSpeaking={isListening}
@@ -117,6 +136,7 @@ export function SessionPage() {
                 onEndSession={handleEndSession}
                 autoStart={autoStartSession}
                 topic={launchTopic}
+                resumeHistory={resumeHistory}
               />
             </div>
           </div>
